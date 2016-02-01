@@ -1,4 +1,4 @@
-package com.droidworker.rximageloader.cache;
+package com.droidworker.rximageloader.cache.interfaces;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,6 +22,16 @@ public interface ICacheManager {
      * initialize the disk cache to be used
      */
     void initDiskCache();
+
+    /**
+     * clear memory cache
+     */
+    void clearMemCache();
+
+    /**
+     * clear disk cache
+     */
+    void clearDiskCache();
 
     /**
      * get bitmap according to the path in memory

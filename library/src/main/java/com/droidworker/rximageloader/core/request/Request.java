@@ -1,5 +1,6 @@
 package com.droidworker.rximageloader.core.request;
 
+import android.graphics.Bitmap;
 import android.widget.ImageView;
 
 import rx.Subscription;
@@ -8,7 +9,8 @@ import rx.Subscription;
  * @author DroidWorkerLYF
  */
 public class Request {
-    private String url;
+    private String mKey;
+    private Option mOption;
 
     public Request() {
 
@@ -19,11 +21,25 @@ public class Request {
     }
 
     public Request load(String url) {
-        this.url = url;
+        this.mKey = url;
         return this;
+    }
+
+    public Option getOption(){
+        return mOption;
+    }
+
+    public String getKey(){
+        return mKey;
     }
 
     public Subscription into(ImageView imageView) {
         return null;
+    }
+
+    public class Option {
+        public int reqWidth;
+        public int reqHeight;
+        public Bitmap.Config config;
     }
 }

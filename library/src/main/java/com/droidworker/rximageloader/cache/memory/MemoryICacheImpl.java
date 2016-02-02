@@ -6,6 +6,7 @@ import android.util.LruCache;
 
 import com.droidworker.rximageloader.cache.interfaces.ICache;
 import com.droidworker.rximageloader.core.LoaderConfig;
+import com.droidworker.rximageloader.core.request.Request;
 import com.droidworker.rximageloader.utils.Utils;
 
 import java.lang.ref.SoftReference;
@@ -74,7 +75,7 @@ public class MemoryICacheImpl implements ICache {
 
     @Override
     public void clearCache() {
-        if (checkCacheReady()) {
+        if (mMemoryCache != null) {
             mMemoryCache.evictAll();
         }
         clearReusableBitmaps();
@@ -102,31 +103,22 @@ public class MemoryICacheImpl implements ICache {
         if (TextUtils.isEmpty(key) || bitmap == null) {
             return;
         }
-        if (!checkCacheReady()) {
+        if (mMemoryCache == null) {
             return;
         }
         mMemoryCache.put(key, bitmap);
     }
 
     @Override
-    public Observable<Bitmap> getFromCache(String key) {
+    public Observable<Bitmap> getFromCache(Request request) {
         return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
                 if (!subscriber.isUnsubscribed()) {
-                    subscriber.onNext(mMemoryCache.get(key));
+                    subscriber.onNext(mMemoryCache.get(request.getKey()));
                 }
                 subscriber.onCompleted();
             }
         });
-    }
-
-    /**
-     * check if memory cache is null
-     *
-     * @return true if cache is not null
-     */
-    private boolean checkCacheReady() {
-        return mMemoryCache != null;
     }
 }

@@ -3,6 +3,7 @@ package com.droidworker.rximageloader.cache.interfaces;
 import android.graphics.Bitmap;
 
 import com.droidworker.rximageloader.core.LoaderConfig;
+import com.droidworker.rximageloader.core.request.Request;
 
 import rx.Observable;
 
@@ -36,9 +37,9 @@ public interface ICache {
     /**
      * get bitmap form cache
      *
-     * @param key url or path to identify the bitmap in cache
+     * @param request request
      * @return an Observable that get bitmap form cache
      */
-    Observable<Bitmap> getFromCache(String key);
+    Observable<Bitmap> getFromCache(Request request);
 
 }

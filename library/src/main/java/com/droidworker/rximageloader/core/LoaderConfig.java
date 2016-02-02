@@ -40,6 +40,7 @@ public class LoaderConfig {
     public final int screenWidth, screenHeight;
     /** the storage path of temporary files */
     public final String tempFilePath;
+    public final boolean isDebug;
 
     private LoaderConfig(final Builder builder, Context context) {
         this.memCacheSizePercent = builder.memCacheSizePercent != 0.0f ? builder.memCacheSizePercent : DEFAULT_MEM_CACHE_PERCENT;
@@ -61,6 +62,7 @@ public class LoaderConfig {
         DisplayMetrics dm = context.getResources().getDisplayMetrics();
         screenWidth = dm.widthPixels;
         screenHeight = dm.heightPixels;
+        isDebug = builder.isDebug;
     }
 
     /**
@@ -83,6 +85,7 @@ public class LoaderConfig {
         private float memCacheSizePercent;
         private Bitmap.Config mConfig;
         private String diskCachePath;
+        private boolean isDebug = true;
 
         public Builder() {
 
@@ -184,6 +187,11 @@ public class LoaderConfig {
          */
         public Builder setDiskCachePath(String diskCache) {
             this.diskCachePath = diskCache;
+            return this;
+        }
+
+        public Builder setDebug(boolean debug){
+            this.isDebug = debug;
             return this;
         }
 

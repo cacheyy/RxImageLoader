@@ -1,7 +1,10 @@
 package com.droidworker.rximageloader.core;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 
+import com.droidworker.rximageloader.cache.DroidCacheManager;
 import com.droidworker.rximageloader.core.request.RequestManager;
 
 /**
@@ -38,18 +41,28 @@ public class ImageLoader {
         return null;
     }
 
+    public static RequestManager with(Activity activity){
+        return null;
+    }
+
+    public static RequestManager with(Fragment fragment){
+        return null;
+    }
+
     public void clearCache() {
-        clearMemory();
-        clearDisk();
+        DroidCacheManager.getInstance(mGlobalConfig).clearAll();
     }
 
     public void clearMemory() {
+        DroidCacheManager.getInstance(mGlobalConfig).clearMemCache();
     }
 
     public void clearDisk() {
+        DroidCacheManager.getInstance(mGlobalConfig).clearDiskCache();
     }
 
     public void setGlobalLoaderConfig(LoaderConfig loaderConfig) {
         this.mGlobalConfig = loaderConfig;
+        DroidCacheManager.getInstance(loaderConfig);
     }
 }

@@ -17,4 +17,5 @@ public class MyApplication extends Application {
         LoaderConfig loaderConfig = LoaderConfig.createDefaultConfig(getApplicationContext());
         ImageLoader.getInstance().setGlobalLoaderConfig(loaderConfig);
     }
+
 }

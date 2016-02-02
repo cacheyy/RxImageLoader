@@ -68,9 +68,15 @@ public class MemoryICacheImpl implements ICache {
      */
     public int getBitmapSize(Bitmap value) {
 
-        if (Utils.hasKitKat()) { return value.getAllocationByteCount(); }
+        if (Utils.hasKitKat()) {
+            try {
+                return value.getAllocationByteCount();
+            } catch (NullPointerException e) {
+                // Do nothing.
+            }
+        }
 
-        return value.getByteCount();
+        return value.getHeight() * value.getRowBytes();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.droidworker.rximageloader.utils;
 
 import android.os.Build;
+import android.os.Looper;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,5 +40,9 @@ public class Utils {
 
     public static boolean hasKitKat() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+    }
+
+    public static boolean isOnMainThread() {
+        return Looper.myLooper() == Looper.getMainLooper();
     }
 }

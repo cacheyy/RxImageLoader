@@ -1,7 +1,132 @@
 package com.droidworker.rximageloader.cache.memory;
 
+import android.graphics.Bitmap;
+import android.text.TextUtils;
+import android.util.LruCache;
+
+import com.droidworker.rximageloader.cache.interfaces.ICache;
+import com.droidworker.rximageloader.core.LoaderConfig;
+import com.droidworker.rximageloader.utils.Utils;
+
+import java.lang.ref.SoftReference;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import rx.Observable;
+import rx.Subscriber;
+
 /**
+ * A LRU based memory cache which implements ICache interface
+ *
  * @author DroidWorkerLYF
  */
-public class MemoryICacheImpl {
+public class MemoryICacheImpl implements ICache {
+    /**
+     * LruCache used for memory cache
+     */
+    private LruCache<String, Bitmap> mMemoryCache;
+    /**
+     * A set of bitmaps support inBitmap
+     */
+    private Set<SoftReference<Bitmap>> mReusableBitmaps;
+
+    /**
+     * Constructor of memory cache
+     *
+     * @param loaderConfig the global config which contains the memory cache size
+     */
+    public MemoryICacheImpl(LoaderConfig loaderConfig) {
+        initCache(loaderConfig);
+    }
+
+    @Override
+    public void initCache(LoaderConfig loaderConfig) {
+        mReusableBitmaps = Collections.synchronizedSet(new HashSet<>());
+        mMemoryCache = new LruCache<String, Bitmap>(loaderConfig.memCacheSize) {
+
+            protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
+                //Only support android 4.0 and above, so the BitmapFactory.Options inBitmap is
+                // all available. we don't need recycle the bitmap here, instead, we put them in a
+                // set, and reuse it when needed
+                mReusableBitmaps.add(new SoftReference<>(oldValue));
+            }
+
+            @Override
+            protected int sizeOf(String key, Bitmap value) {
+                final int bitmapSize = getBitmapSize(value) / 1024;
+                return bitmapSize == 0 ? 1 : bitmapSize;
+            }
+        };
+    }
+
+    /**
+     * @param value a bitmap
+     * @return size of bitmap
+     */
+    public int getBitmapSize(Bitmap value) {
+
+        if (Utils.hasKitKat()) { return value.getAllocationByteCount(); }
+
+        return value.getByteCount();
+    }
+
+    @Override
+    public void clearCache() {
+        if (checkCacheReady()) {
+            mMemoryCache.evictAll();
+        }
+        clearReusableBitmaps();
+    }
+
+    /**
+     * Clear the reusable bitmaps' set and recycle bitmaps
+     */
+    private void clearReusableBitmaps() {
+        if (mReusableBitmaps != null && !mReusableBitmaps.isEmpty()) {
+            synchronized (MemoryICacheImpl.class) {
+                final Iterator<SoftReference<Bitmap>> iterator = mReusableBitmaps.iterator();
+                Bitmap item;
+
+                while (iterator.hasNext()) {
+                    iterator.next().get().recycle();
+                }
+                mReusableBitmaps.clear();
+            }
+        }
+    }
+
+    @Override
+    public void putInCache(String key, Bitmap bitmap) {
+        if (TextUtils.isEmpty(key) || bitmap == null) {
+            return;
+        }
+        if (!checkCacheReady()) {
+            return;
+        }
+        mMemoryCache.put(key, bitmap);
+    }
+
+    @Override
+    public Observable<Bitmap> getFromCache(String key) {
+        return Observable.create(new Observable.OnSubscribe<Bitmap>() {
+            @Override
+            public void call(Subscriber<? super Bitmap> subscriber) {
+                if (!subscriber.isUnsubscribed()) {
+                    subscriber.onNext(mMemoryCache.get(key));
+                }
+                subscriber.onCompleted();
+            }
+        });
+    }
+
+    /**
+     * check if memory cache is null
+     *
+     * @return true if cache is not null
+     */
+    private boolean checkCacheReady() {
+        return mMemoryCache != null;
+    }
 }

@@ -2,6 +2,8 @@ package com.droidworker.rximageloader.cache.interfaces;
 
 import android.graphics.Bitmap;
 
+import com.droidworker.rximageloader.core.LoaderConfig;
+
 import rx.Observable;
 
 /**
@@ -13,16 +15,30 @@ public interface ICache {
 
     /**
      * initialize cache
+     *
+     * @param loaderConfig the loader config needed to config cache
      */
-    void initCache();
+    void initCache(LoaderConfig loaderConfig);
 
     /**
      * clear cache
      */
     void clearCache();
 
-    void putInCache(Bitmap bitmap);
+    /**
+     * put bitmap into cache
+     *
+     * @param key    url or path used as the key
+     * @param bitmap the bitmap needed to put in cache
+     */
+    void putInCache(String key, Bitmap bitmap);
 
-    Observable<Bitmap> getFromCache();
+    /**
+     * get bitmap form cache
+     *
+     * @param key url or path to identify the bitmap in cache
+     * @return an Observable that get bitmap form cache
+     */
+    Observable<Bitmap> getFromCache(String key);
 
 }

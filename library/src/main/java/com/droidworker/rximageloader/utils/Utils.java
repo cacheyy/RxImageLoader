@@ -1,5 +1,7 @@
 package com.droidworker.rximageloader.utils;
 
+import android.os.Build;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -33,5 +35,9 @@ public class Utils {
             sb.append(hex);
         }
         return sb.toString();
+    }
+
+    public static boolean hasKitKat() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
 }

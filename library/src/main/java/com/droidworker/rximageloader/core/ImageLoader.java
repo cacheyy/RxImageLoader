@@ -5,7 +5,6 @@ import android.app.Fragment;
 import android.content.Context;
 
 import com.droidworker.rximageloader.cache.DroidCacheManager;
-import com.droidworker.rximageloader.core.request.RequestManager;
 
 /**
  * @author DroidWorkerLYF
@@ -35,18 +34,34 @@ public class ImageLoader {
     }
 
     public static RequestManager with(Context context) {
-        if(INSTANCE.mGlobalConfig == null){
-            throw new IllegalStateException("You should set a global loader config before use");
-        }
-        return null;
+        isReady();
+        return RequestManagerCreator.get().get(context);
     }
 
     public static RequestManager with(Activity activity){
-        return null;
+        isReady();
+        return RequestManagerCreator.get().get(activity);
     }
 
     public static RequestManager with(Fragment fragment){
-        return null;
+        isReady();
+        return RequestManagerCreator.get().get(fragment);
+    }
+
+    public static SupportRequestManager with(android.support.v4.app.FragmentActivity activity){
+        isReady();
+        return RequestManagerCreator.get().get(activity);
+    }
+    
+    public static SupportRequestManager with(android.support.v4.app.Fragment fragment){
+        isReady();
+        return RequestManagerCreator.get().get(fragment);
+    }
+
+    private static void isReady(){
+        if(INSTANCE.mGlobalConfig == null){
+            throw new IllegalStateException("You should set a global loader config before use");
+        }
     }
 
     public void clearCache() {

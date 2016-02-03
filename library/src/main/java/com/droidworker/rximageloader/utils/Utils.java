@@ -42,6 +42,10 @@ public class Utils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
 
+    public static boolean hasJBMR1(){
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
+    }
+
     public static boolean isOnMainThread() {
         return Looper.myLooper() == Looper.getMainLooper();
     }

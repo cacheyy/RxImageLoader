@@ -5,6 +5,9 @@ import android.app.Fragment;
 import android.content.Context;
 
 import com.droidworker.rximageloader.cache.DroidCacheManager;
+import com.droidworker.rximageloader.core.request.RequestManager;
+import com.droidworker.rximageloader.core.request.RequestManagerCreator;
+import com.droidworker.rximageloader.core.request.SupportRequestManager;
 
 /**
  * @author DroidWorkerLYF
@@ -14,7 +17,7 @@ public class ImageLoader {
     private LoaderConfig mGlobalConfig;
 
     private ImageLoader() {
-
+        throw new IllegalStateException("No instance");
     }
 
     /**
@@ -38,46 +41,49 @@ public class ImageLoader {
         return RequestManagerCreator.get().get(context);
     }
 
-    public static RequestManager with(Activity activity){
+    public static RequestManager with(Activity activity) {
         isReady();
         return RequestManagerCreator.get().get(activity);
     }
 
-    public static RequestManager with(Fragment fragment){
+    public static RequestManager with(Fragment fragment) {
         isReady();
         return RequestManagerCreator.get().get(fragment);
     }
 
-    public static SupportRequestManager with(android.support.v4.app.FragmentActivity activity){
+    public static SupportRequestManager with(android.support.v4.app.FragmentActivity activity) {
         isReady();
         return RequestManagerCreator.get().get(activity);
     }
-    
-    public static SupportRequestManager with(android.support.v4.app.Fragment fragment){
+
+    public static SupportRequestManager with(android.support.v4.app.Fragment fragment) {
         isReady();
         return RequestManagerCreator.get().get(fragment);
     }
 
-    private static void isReady(){
-        if(INSTANCE.mGlobalConfig == null){
+    private static void isReady() {
+        if (INSTANCE.mGlobalConfig == null) {
             throw new IllegalStateException("You should set a global loader config before use");
         }
     }
 
     public void clearCache() {
-        DroidCacheManager.getInstance(mGlobalConfig).clearAll();
+        DroidCacheManager.getInstance().clearAll();
     }
 
     public void clearMemory() {
-        DroidCacheManager.getInstance(mGlobalConfig).clearMemCache();
+        DroidCacheManager.getInstance().clearMemCache();
     }
 
     public void clearDisk() {
-        DroidCacheManager.getInstance(mGlobalConfig).clearDiskCache();
+        DroidCacheManager.getInstance().clearDiskCache();
     }
 
     public void setGlobalLoaderConfig(LoaderConfig loaderConfig) {
+        if (mGlobalConfig != null) {
+            throw new IllegalStateException("Global loader config has been set");
+        }
         this.mGlobalConfig = loaderConfig;
-        DroidCacheManager.getInstance(loaderConfig);
+        DroidCacheManager.getInstance().init(loaderConfig);
     }
 }

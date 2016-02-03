@@ -1,4 +1,4 @@
-package com.droidworker.rximageloader.core;
+package com.droidworker.rximageloader.core.request;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -41,7 +41,7 @@ public class RequestManagerCreator {
 
     public RequestManager get(Fragment fragment) {
         FragmentManager fm;
-        if (Utils.hasJBMR1()) {
+        if (Utils.hasJellyBeanMR1()) {
             fm = fragment.getChildFragmentManager();
         } else {
             fm = fragment.getFragmentManager();
@@ -59,7 +59,7 @@ public class RequestManagerCreator {
     private RequestManager getRequestManager(FragmentManager fm) {
         RequestManager fragment = new RequestManager();
         requestManagerMap.put(fm, fragment);
-        fm.beginTransaction().add(fragment, FRAGMENT_TAG);
+        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commit();
         return fragment;
     }
 
@@ -82,7 +82,7 @@ public class RequestManagerCreator {
     private SupportRequestManager getSupportRequestManager(android.support.v4.app.FragmentManager fm) {
         SupportRequestManager fragment = new SupportRequestManager();
         supportRequestManagerMap.put(fm, fragment);
-        fm.beginTransaction().add(fragment, FRAGMENT_TAG);
+        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commit();
         return fragment;
     }
 

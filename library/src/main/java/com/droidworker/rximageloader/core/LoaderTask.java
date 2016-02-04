@@ -34,8 +34,8 @@ public class LoaderTask {
                 //This is a local file
                 Bitmap bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
                         .getOption());
-                ImageLoader.getInstance().getCacheManager().putInMem(request.getPath(), bitmap);
-                ImageLoader.getInstance().getCacheManager().putInDisk(request.getPath(), bitmap);
+                ImageLoader.getInstance().getCacheManager().putInMem(request.getKey(), bitmap);
+                ImageLoader.getInstance().getCacheManager().putInDisk(request.getKey(), bitmap);
                 subscriber.onNext(bitmap);
                 Log.e(TAG, "" + bitmap.toString());
             }

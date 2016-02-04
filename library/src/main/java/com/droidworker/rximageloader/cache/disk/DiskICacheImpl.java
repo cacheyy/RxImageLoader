@@ -119,7 +119,7 @@ public class DiskICacheImpl implements ICache {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
 
-                final String path = Utils.hashKeyForDisk(request.getPath());
+                final String path = Utils.hashKeyForDisk(request.getKey());
                 Bitmap bitmap;
                 synchronized (mDiskCacheLockObject) {
                     while (mDiskCacheStarting) {

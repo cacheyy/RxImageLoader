@@ -161,6 +161,10 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         return mPath;
     }
 
+    public String getKey() {
+        return mPath.substring(mPath.lastIndexOf("/") + 1, mPath.length());
+    }
+
     /**
      * @return the view attached to this request
      */
@@ -224,6 +228,7 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
             return;
         }
         View view = mReference.get();
+//        view.post(() -> view.setBackgroundResource(0));
         view.setBackgroundResource(0);
         if (view instanceof ImageView) {
             ((ImageView) view).setImageBitmap(requestResult);

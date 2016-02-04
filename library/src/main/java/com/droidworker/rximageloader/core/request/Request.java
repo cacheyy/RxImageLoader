@@ -14,10 +14,12 @@ import rx.Subscriber;
 import rx.functions.Action1;
 
 /**
+ * This class contains all things that a task needed
+ *
  * @author DroidWorkerLYF
  */
 public class Request<T extends Bitmap> extends Subscriber<T> {
-    protected String mKey;
+    protected String mPath;
     protected Option mOption;
     protected WeakReference<View> mReference;
     protected Action1<Float> onProgress;
@@ -29,40 +31,85 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
      * If this is true, the we will not cache the bitmap in disk
      */
     private boolean skipCacheInDisk;
+    /**
+     * When {@link Subscriber#onError(Throwable)} called, set this to view's background
+     */
     private int errorId;
+    /**
+     * Before load an image, set this to view's background
+     */
     private int placeholderId;
+    /**
+     * This {@link Subscriber} is used to notify the {@link RequestManager} that the request has
+     * been created and we shall perform a load task
+     */
     private Subscriber<Request> internalSubscriber;
 
-    public Request load(String url) {
-        this.mKey = url;
+    /**
+     * set path
+     *
+     * @param path url or local path
+     * @return this request
+     */
+    public Request load(String path) {
+        this.mPath = path;
         return this;
     }
 
+    /**
+     * @param onProgress {@link Action1} used to update progress
+     * @return this request
+     */
     public Request progress(Action1<Float> onProgress) {
         this.onProgress = onProgress;
         return this;
     }
 
+    /**
+     * @param skip skip cache in memory or not
+     * @return this request
+     */
     public Request skipCacheInMem(boolean skip) {
         this.skipCacheInMem = skip;
         return this;
     }
 
+    /**
+     * @param skip skip cache in disk or not
+     * @return this request
+     */
     public Request skipCacheInDisk(boolean skip) {
         this.skipCacheInDisk = skip;
         return this;
     }
 
+    /**
+     * set resource id used for {@link Subscriber#onError(Throwable)}
+     *
+     * @param resId the resource id
+     * @return this request
+     */
     public Request error(int resId) {
         this.errorId = resId;
         return this;
     }
 
+    /**
+     * set resource id used for {@link Subscriber#onStart()}
+     *
+     * @param resId the resource id
+     * @return this request
+     */
     public Request placeholder(int resId) {
         this.placeholderId = resId;
         return this;
     }
 
+    /**
+     * set the view will be used to set the bitmap
+     *
+     * @param view the container
+     */
     public void into(View view) {
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
@@ -74,22 +121,37 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         Observable.just(this).subscribe(internalSubscriber);
     }
 
+    /**
+     * @param subscriber set this {@link Subscriber} as notify subscriber
+     */
     public void setNotifySubscriber(Subscriber<Request> subscriber) {
         this.internalSubscriber = subscriber;
     }
 
-    public Observable<Request> get() {
+    /**
+     * @return an Observable which will be used to trigger the internalSubscriber
+     */
+    private Observable<Request> get() {
         return Observable.just(this);
     }
 
+    /**
+     * @return the options about this request
+     */
     public Option getOption() {
         return mOption;
     }
 
-    public String getKey() {
-        return mKey;
+    /**
+     * @return the path
+     */
+    public String getPath() {
+        return mPath;
     }
 
+    /**
+     * @return the view attached to this request
+     */
     public View getAttachedView() {
         if (mReference == null) {
             return null;
@@ -97,14 +159,22 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         return mReference.get();
     }
 
+    /**
+     * Clear
+     */
     public void clear() {
-        mKey = null;
+        mPath = null;
         mOption = null;
         mReference.clear();
         skipCacheInMem = false;
         skipCacheInDisk = false;
     }
 
+    /**
+     * Update progress
+     *
+     * @param percent current progress
+     */
     public void onProgress(float percent) {
         if (onProgress != null) {
             onProgress.call(percent);
@@ -154,6 +224,9 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         }
     }
 
+    /**
+     * @return true if we don't have a view
+     */
     private boolean checkNull() {
         return mReference == null || mReference.get() == null;
     }

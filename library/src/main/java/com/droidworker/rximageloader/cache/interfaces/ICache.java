@@ -8,7 +8,7 @@ import com.droidworker.rximageloader.core.request.Request;
 import rx.Observable;
 
 /**
- * define the behaviour of a cache
+ * Define the behaviour of a cache
  *
  * @author DroidWorkerLYF
  */

@@ -42,15 +42,25 @@ public class Utils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
 
-    public static boolean hasJellyBean(){
+    public static boolean hasJellyBean() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
     }
 
-    public static boolean hasJellyBeanMR1(){
+    public static boolean hasJellyBeanMR1() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
     }
 
     public static boolean isOnMainThread() {
         return Looper.myLooper() == Looper.getMainLooper();
+    }
+
+    /**
+     * Check if this path is an url
+     *
+     * @param path path of request
+     * @return true if it is an url
+     */
+    public static boolean isUrl(String path) {
+        return path.startsWith("http://") || path.startsWith("https://");
     }
 }

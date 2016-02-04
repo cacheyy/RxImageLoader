@@ -2,9 +2,10 @@ package com.droidworker.rximageloader.core.request;
 
 import android.app.Fragment;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.View;
 
-import com.droidworker.rximageloader.cache.DroidCacheManager;
+import com.droidworker.rximageloader.core.LoaderTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ import rx.schedulers.Schedulers;
  * @author DroidWorkerLYF
  */
 public class RequestManager extends Fragment {
+    private static final String TAG = "RequestManager";
     private Map<View, Request<Bitmap>> requestMap = new HashMap<>();
 
     public Request<Bitmap> load(String url) {
@@ -57,8 +59,9 @@ public class RequestManager extends Fragment {
         }
         requestMap.put(view, request);
 
-        Observable.concat(DroidCacheManager.getInstance().getFromMem(request), DroidCacheManager
-                .getInstance().getFormDisk(request)).subscribeOn(Schedulers.io()).observeOn
+        Observable.concat(LoaderTask.getFromMem(request), LoaderTask.getFormDisk(request),
+                LoaderTask.getBitmap(request))
+                .subscribeOn(Schedulers.io()).observeOn
                 (AndroidSchedulers.mainThread())
                 .subscribe
                         (request);
@@ -67,7 +70,7 @@ public class RequestManager extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-
+        Log.e(TAG, "onPause");
         for (Map.Entry<View, Request<Bitmap>> viewRequestEntry : requestMap.entrySet()) {
             viewRequestEntry.getValue().unsubscribe();
         }

@@ -121,7 +121,7 @@ public class MemoryICacheImpl implements ICache {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
                 if (!subscriber.isUnsubscribed()) {
-                    subscriber.onNext(mMemoryCache.get(request.getKey()));
+                    subscriber.onNext(mMemoryCache.get(request.getPath()));
                 }
                 subscriber.onCompleted();
             }

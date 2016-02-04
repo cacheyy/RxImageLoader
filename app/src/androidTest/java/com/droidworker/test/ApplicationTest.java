@@ -1,4 +1,4 @@
-package com.droidworker.rximageloader;
+package com.droidworker.test;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

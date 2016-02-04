@@ -17,7 +17,7 @@ public class ImageLoader {
     private LoaderConfig mGlobalConfig;
 
     private ImageLoader() {
-        throw new IllegalStateException("No instance");
+
     }
 
     /**

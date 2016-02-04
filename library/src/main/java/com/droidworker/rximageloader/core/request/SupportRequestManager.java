@@ -3,8 +3,6 @@ package com.droidworker.rximageloader.core.request;
 import android.support.v4.app.Fragment;
 import android.widget.ImageView;
 
-import com.droidworker.rximageloader.core.request.Request;
-
 import java.util.HashMap;
 import java.util.Map;
 

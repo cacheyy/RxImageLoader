@@ -74,9 +74,9 @@ public class Processor {
      * @return inSampleSize
      */
     public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        int inSampleSize = 1;
         final int height = options.outHeight;
         final int width = options.outWidth;
-        int inSampleSize = 1;
 
         if (reqHeight == 0 || reqWidth == 0) { return inSampleSize; }
 

@@ -5,6 +5,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.droidworker.rximageloader.core.LoaderConfig;
 import com.droidworker.rximageloader.utils.Utils;
 
 import java.lang.ref.WeakReference;
@@ -19,8 +20,9 @@ import rx.functions.Action1;
  * @author DroidWorkerLYF
  */
 public class Request<T extends Bitmap> extends Subscriber<T> {
+    private static final String TAG = "Request";
     protected String mPath;
-    protected Option mOption;
+    protected Option mOption = new Option();
     protected WeakReference<View> mReference;
     protected Action1<Float> onProgress;
     /**
@@ -44,6 +46,12 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
      * been created and we shall perform a load task
      */
     private Subscriber<Request> internalSubscriber;
+
+    public Request(LoaderConfig loaderConfig) {
+        mOption.config = loaderConfig.mConfig;
+        mOption.reqWidth = loaderConfig.screenWidth / 4;
+        mOption.reqHeight = loaderConfig.screenHeight / 4;
+    }
 
     /**
      * set path
@@ -102,6 +110,10 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
      */
     public Request placeholder(int resId) {
         this.placeholderId = resId;
+        return this;
+    }
+
+    public Request tempConfig() {
         return this;
     }
 
@@ -212,6 +224,7 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
             return;
         }
         View view = mReference.get();
+        view.setBackgroundResource(0);
         if (view instanceof ImageView) {
             ((ImageView) view).setImageBitmap(requestResult);
         } else {
@@ -234,6 +247,6 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     public class Option {
         public int reqWidth;
         public int reqHeight;
-        public Bitmap.Config config;
+        public Bitmap.Config config = Bitmap.Config.RGB_565;
     }
 }

@@ -63,4 +63,13 @@ public class Utils {
     public static boolean isUrl(String path) {
         return path.startsWith("http://") || path.startsWith("https://");
     }
+
+    /**
+     * Check if this path is an Gif
+     * @param path path of request
+     * @return true if it is a gif
+     */
+    public static boolean isGif(String path){
+        return path.substring(path.length() - 3).toLowerCase().equals("gif");
+    }
 }

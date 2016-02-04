@@ -6,8 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.droidworker.test.R;
 import com.droidworker.rximageloader.core.ImageLoader;
+import com.droidworker.test.R;
 import com.droidworker.test.model.bean.ImageBean;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import butterknife.ButterKnife;
 public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<ImageBean> mList = new ArrayList<>();
 
-    public MainAdapter(List<ImageBean> list){
+    public MainAdapter(List<ImageBean> list) {
         this.mList = list;
     }
 
@@ -36,7 +36,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ImageBean bean = mList.get(position);
         ImageLoader.with(holder.itemView.getContext()).load(bean.path).error(R.drawable.error)
-                .placeholder(R.drawable.loading).into(((ItemViewHolder)holder).mImageView);
+                .placeholder(R.drawable.loading).into(((ItemViewHolder) holder).mImageView);
     }
 
     @Override

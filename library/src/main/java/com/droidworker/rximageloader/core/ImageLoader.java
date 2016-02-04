@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 
 import com.droidworker.rximageloader.cache.DroidCacheManager;
+import com.droidworker.rximageloader.cache.interfaces.ICacheManager;
 import com.droidworker.rximageloader.core.request.RequestManager;
 import com.droidworker.rximageloader.core.request.RequestManagerCreator;
 import com.droidworker.rximageloader.core.request.SupportRequestManager;
@@ -15,9 +16,10 @@ import com.droidworker.rximageloader.core.request.SupportRequestManager;
 public class ImageLoader {
     private static ImageLoader INSTANCE;
     private LoaderConfig mGlobalConfig;
+    private DroidCacheManager cacheManager;
 
     private ImageLoader() {
-
+        cacheManager = new DroidCacheManager();
     }
 
     /**
@@ -68,15 +70,15 @@ public class ImageLoader {
     }
 
     public void clearCache() {
-        DroidCacheManager.getInstance().clearAll();
+        cacheManager.clearAll();
     }
 
     public void clearMemory() {
-        DroidCacheManager.getInstance().clearMemCache();
+        cacheManager.clearMemCache();
     }
 
     public void clearDisk() {
-        DroidCacheManager.getInstance().clearDiskCache();
+        cacheManager.clearDiskCache();
     }
 
     public void setGlobalLoaderConfig(LoaderConfig loaderConfig) {
@@ -84,6 +86,14 @@ public class ImageLoader {
             throw new IllegalStateException("Global loader config has been set");
         }
         this.mGlobalConfig = loaderConfig;
-        DroidCacheManager.getInstance().init(loaderConfig);
+        cacheManager.init(loaderConfig);
+    }
+
+    public ICacheManager getCacheManager(){
+        return cacheManager;
+    }
+
+    public LoaderConfig getGlobalConfig(){
+        return mGlobalConfig;
     }
 }

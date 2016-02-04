@@ -18,22 +18,10 @@ import rx.Observable;
  * @author DroidWorkerLYF
  */
 public class DroidCacheManager implements ICacheManager {
-    private static DroidCacheManager INSTANCE;
     private ICache memCache;
     private ICache diskCache;
 
-    private DroidCacheManager() {
-    }
-
-    public static DroidCacheManager getInstance() {
-        if (INSTANCE == null) {
-            synchronized (DroidCacheManager.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new DroidCacheManager();
-                }
-            }
-        }
-        return INSTANCE;
+    public DroidCacheManager() {
     }
 
     @Override
@@ -60,6 +48,16 @@ public class DroidCacheManager implements ICacheManager {
             return Observable.empty();
         }
         return diskCache.getFromCache(request);
+    }
+
+    @Override
+    public void putInMem(String key, Bitmap bitmap) {
+        memCache.putInCache(key, bitmap);
+    }
+
+    @Override
+    public void putInDisk(String key, Bitmap bitmap) {
+        diskCache.putInCache(key, bitmap);
     }
 
     @Override

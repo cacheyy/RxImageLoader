@@ -33,6 +33,10 @@ public interface ICacheManager {
      */
     Observable<Bitmap> getFormDisk(Request request);
 
+    void putInMem(String key, Bitmap bitmap);
+
+    void putInDisk(String key, Bitmap bitmap);
+
     /**
      * Clear both memory and disk cache
      */

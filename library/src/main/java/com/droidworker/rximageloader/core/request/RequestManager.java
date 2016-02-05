@@ -41,6 +41,7 @@ public class RequestManager extends Fragment {
 
             @Override
             public void onNext(Request request) {
+                Log.e(TAG, "request created");
                 into(request);
             }
         });
@@ -52,16 +53,23 @@ public class RequestManager extends Fragment {
         if (view == null) {
             return;
         }
+        Log.e(TAG, "request received");
         if (requestMap.containsKey(view)) {
-            request = requestMap.get(view);
+            Request oldRequest = requestMap.get(view);
             requestMap.remove(view);
-            request.unsubscribe();
-            request.clear();
+            oldRequest.unsubscribe();
+            oldRequest.clear();
         }
         requestMap.put(view, request);
 
         Observable.concat(LoaderTask.getFromMem(request), LoaderTask.getFormDisk(request),
                 LoaderTask.getBitmap(request))
+                .takeFirst(bitmap -> {
+                    if(bitmap == null || bitmap.isRecycled()){
+                        return false;
+                    }
+                    return true;
+                })
                 .subscribeOn(Schedulers.io()).observeOn
                 (AndroidSchedulers.mainThread())
                 .subscribe
@@ -72,14 +80,16 @@ public class RequestManager extends Fragment {
     public void onPause() {
         super.onPause();
         Log.e(TAG, "onPause");
-        for (Map.Entry<View, Request<Bitmap>> viewRequestEntry : requestMap.entrySet()) {
-            viewRequestEntry.getValue().unsubscribe();
-        }
+
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.e(TAG, "onDestroy");
+        for (Map.Entry<View, Request<Bitmap>> viewRequestEntry : requestMap.entrySet()) {
+            viewRequestEntry.getValue().unsubscribe();
+        }
     }
 
     @Override

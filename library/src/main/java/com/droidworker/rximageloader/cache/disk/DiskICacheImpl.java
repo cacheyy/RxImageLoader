@@ -118,7 +118,10 @@ public class DiskICacheImpl implements ICache {
         return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
-
+                if(subscriber.isUnsubscribed()){
+                    return ;
+                }
+                Log.e(TAG, "search disk");
                 final String path = Utils.hashKeyForDisk(request.getKey());
                 Bitmap bitmap;
                 synchronized (mDiskCacheLockObject) {
@@ -136,6 +139,7 @@ public class DiskICacheImpl implements ICache {
                             if (snapshot != null) {
                                 inputStream = snapshot.getInputStream(DISK_CACHE_INDEX);
                                 if (inputStream != null) {
+                                    Log.e(TAG, "hit disk");
                                     FileDescriptor fd = ((FileInputStream) inputStream).getFD();
                                     bitmap = Processor.decodeBitmapFromFileDescriptor(fd, request.getOption());
                                     subscriber.onNext(bitmap);
@@ -155,8 +159,8 @@ public class DiskICacheImpl implements ICache {
                         }
 
                     }
+                    subscriber.onCompleted();
                 }
-                subscriber.onCompleted();
             }
         });
     }

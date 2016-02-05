@@ -26,6 +26,10 @@ public class LoaderTask {
 
     public static Observable<Bitmap> getBitmap(Request request) {
         return Observable.create(subscriber -> {
+            Log.e(TAG, "get from origin");
+            if(subscriber.isUnsubscribed()){
+                return ;
+            }
             if(Utils.isUrl(request.getPath())){
 
             } else if(Utils.isGif(request.getPath())){

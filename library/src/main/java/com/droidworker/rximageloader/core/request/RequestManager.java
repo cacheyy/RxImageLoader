@@ -82,9 +82,7 @@ public class RequestManager extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         Log.e(TAG, "onDestroy");
-        for (Map.Entry<View, Request<Bitmap>> viewRequestEntry : requestMap.entrySet()) {
-            viewRequestEntry.getValue().unsubscribe();
-        }
+        unsubscribeAll();
     }
 
     @Override
@@ -95,5 +93,16 @@ public class RequestManager extends Fragment {
     @Override
     public void onLowMemory() {
         super.onLowMemory();
+        unsubscribeAll();
+        ImageLoader.getInstance().clearMemory();
+    }
+
+    /**
+     * Unsubscribe all the subscribers
+     */
+    private void unsubscribeAll(){
+        for (Map.Entry<View, Request<Bitmap>> viewRequestEntry : requestMap.entrySet()) {
+            viewRequestEntry.getValue().unsubscribe();
+        }
     }
 }

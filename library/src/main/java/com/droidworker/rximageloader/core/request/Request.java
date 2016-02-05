@@ -233,8 +233,8 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         }
         Log.e(TAG, "onNext");
         View view = mReference.get();
-//        view.post(() -> view.setBackgroundResource(0));
-        view.setBackgroundResource(0);
+        view.post(() -> view.setBackgroundResource(0));
+//        view.setBackgroundResource(0);
         if (view instanceof ImageView) {
             ((ImageView) view).setImageBitmap(requestResult);
         } else {

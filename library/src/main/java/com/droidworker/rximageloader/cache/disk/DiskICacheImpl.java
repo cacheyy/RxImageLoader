@@ -46,8 +46,8 @@ public class DiskICacheImpl implements ICache {
             if (mDiskLruCache == null || mDiskLruCache.isClosed()) {
                 File diskCacheDir = new File(loaderConfig.diskCachePath);
                 if (!diskCacheDir.exists()) {
-                    if(diskCacheDir.mkdirs()){
-                        if(loaderConfig.isDebug){
+                    if (diskCacheDir.mkdirs()) {
+                        if (loaderConfig.isDebug) {
                             Log.w(TAG, "disk cache mkdirs fail");
                         }
                     }
@@ -83,14 +83,12 @@ public class DiskICacheImpl implements ICache {
         synchronized (mDiskCacheLockObject) {
             if (mDiskLruCache != null) {
                 final String path = Utils.hashKeyForDisk(key);
-                Log.e(TAG, "key " + key + "path " + path);
                 OutputStream out = null;
                 try {
                     DiskLruCache.Snapshot snapshot = mDiskLruCache.get(path);
                     if (snapshot == null) {
                         final DiskLruCache.Editor editor = mDiskLruCache.edit(path);
                         if (editor != null) {
-                            Log.e(TAG, "editor " + editor.toString());
                             out = editor.newOutputStream(DISK_CACHE_INDEX);
                             bitmap.compress(mLoaderConfig.mCompressFormat,
                                     mLoaderConfig.mCompressQuality, out);
@@ -120,12 +118,11 @@ public class DiskICacheImpl implements ICache {
         return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
-                if(subscriber.isUnsubscribed()){
-                    return ;
+                if (subscriber.isUnsubscribed()) {
+                    return;
                 }
                 Log.e(TAG, "search disk");
                 final String path = Utils.hashKeyForDisk(request.getKey());
-                Log.e(TAG, "path " + path);
                 Bitmap bitmap;
                 synchronized (mDiskCacheLockObject) {
                     while (mDiskCacheStarting) {
@@ -140,7 +137,6 @@ public class DiskICacheImpl implements ICache {
                         try {
                             DiskLruCache.Snapshot snapshot = mDiskLruCache.get(path);
                             if (snapshot != null) {
-                                Log.e(TAG, "snapshot " + snapshot.toString());
                                 inputStream = snapshot.getInputStream(DISK_CACHE_INDEX);
                                 if (inputStream != null) {
                                     Log.e(TAG, "hit disk");

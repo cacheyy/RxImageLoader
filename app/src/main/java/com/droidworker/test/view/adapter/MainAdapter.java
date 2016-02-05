@@ -1,6 +1,7 @@
 package com.droidworker.test.view.adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import rx.functions.Action1;
 
 /**
  * @author DroidWorkerLYF
@@ -36,12 +38,18 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ImageBean bean = mList.get(position);
         ImageLoader.with(holder.itemView.getContext()).load(bean.path).error(R.drawable.error)
-                .placeholder(R.drawable.loading).into(((ItemViewHolder) holder).mImageView);
+                .placeholder(R.drawable.loading).progress(new Action1<Float>() {
+            @Override
+            public void call(Float aFloat) {
+                Log.e("lyf","progress " + aFloat);
+            }
+        }).into(((ItemViewHolder) holder)
+                .mImageView);
     }
 
     @Override
     public int getItemCount() {
-        return mList.size() >= 1 ? 1 :0;
+        return mList.size() ;//>= 1 ? 1 :0;
     }
 
     public class ItemViewHolder extends RecyclerView.ViewHolder {

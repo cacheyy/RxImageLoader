@@ -6,20 +6,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.droidworker.rximageloader.core.request.Request;
-import com.droidworker.rximageloader.utils.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * @author DroidWorkerLYF
@@ -100,73 +94,6 @@ public class Processor {
             }
         }
         return inSampleSize;
-    }
-
-    /**
-     * 从网络获取图片并写入到本地，然后decode图片
-     *
-     * @param urlString    图片地址
-     * @param outputStream 输出流
-     * @param option       加载选项
-     * @return
-     */
-    public static Bitmap downloadUrlToStream(String urlString, OutputStream outputStream, Request.Option option,
-                                             LoaderConfig loaderConfig) {
-        HttpURLConnection urlConnection = null;
-        File tempOut;
-        BufferedOutputStream out = null;
-        BufferedInputStream in = null;
-        Bitmap bitmap = null;
-
-        try {
-            final URL url = new URL(urlString);
-            urlConnection = (HttpURLConnection) url.openConnection();
-            in = new BufferedInputStream(urlConnection.getInputStream(), IO_BUFFER_SIZE);
-
-            tempOut = new File(loaderConfig.tempFilePath + "/" + Utils.hashKeyForDisk(urlString));
-            if (!tempOut.exists()) {
-                if (!tempOut.getParentFile().exists()) {
-                    tempOut.getParentFile().mkdirs();
-                }
-                tempOut.createNewFile();
-                out = new BufferedOutputStream(new FileOutputStream(tempOut), IO_BUFFER_SIZE);
-
-                final int total = in.available();
-                int len;
-                int current = 0;
-                byte[] buffer = new byte[IO_BUFFER_SIZE];
-                while ((len = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, len);
-//                    if (listener != null) {
-//                        current += len;
-//                        listener.onProgress(current, total);
-//                    }
-                }
-                out.flush();
-            }
-
-            if (tempOut != null && tempOut.exists()) {
-                bitmap = loadFromFilePath(tempOut.getAbsolutePath(), outputStream, option, loaderConfig);
-            }
-        } catch (MalformedURLException e) {
-        } catch (IOException e) {
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return bitmap;
     }
 
     /**

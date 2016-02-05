@@ -190,7 +190,7 @@ public class LoaderConfig {
             return this;
         }
 
-        public Builder setDebug(boolean debug){
+        public Builder setDebug(boolean debug) {
             this.isDebug = debug;
             return this;
         }

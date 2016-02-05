@@ -160,7 +160,7 @@ public final class DiskLruCache implements Closeable {
     private long size = 0;
     private Writer journalWriter;
     private final LinkedHashMap<String, Entry> lruEntries
-            = new LinkedHashMap<String, Entry>(0, 0.75f, true);
+            = new LinkedHashMap<>(0, 0.75f, true);
     private int redundantOpCount;
 
     /**
@@ -268,7 +268,7 @@ public final class DiskLruCache implements Closeable {
 
     /** This cache uses a single background thread to evict entries. */
     private final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
-            60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+            60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     private final Callable<Void> cleanupCallable = new Callable<Void>() {
         @Override public Void call() throws Exception {
             synchronized (DiskLruCache.this) {
@@ -299,7 +299,7 @@ public final class DiskLruCache implements Closeable {
      * there.
      *
      * @param directory a writable directory
-     * @param appVersion
+     * @param appVersion appVersion
      * @param valueCount the number of values per cache entry. Must be positive.
      * @param maxSize the maximum number of bytes this cache should use to store
      * @throws IOException if reading or writing the cache directory fails
@@ -499,6 +499,7 @@ public final class DiskLruCache implements Closeable {
 
         redundantOpCount++;
         journalWriter.append(READ + ' ' + key + '\n');
+        journalWriter.flush();
         if (journalRebuildRequired()) {
             executorService.submit(cleanupCallable);
         }
@@ -606,6 +607,7 @@ public final class DiskLruCache implements Closeable {
             lruEntries.remove(entry.key);
             journalWriter.write(REMOVE + ' ' + entry.key + '\n');
         }
+        journalWriter.flush();
 
         if (size > maxSize || journalRebuildRequired()) {
             executorService.submit(cleanupCallable);
@@ -647,6 +649,7 @@ public final class DiskLruCache implements Closeable {
 
         redundantOpCount++;
         journalWriter.append(REMOVE + ' ' + key + '\n');
+        journalWriter.flush();
         lruEntries.remove(key);
 
         if (journalRebuildRequired()) {
@@ -685,7 +688,7 @@ public final class DiskLruCache implements Closeable {
         if (journalWriter == null) {
             return; // already closed
         }
-        for (Entry entry : new ArrayList<Entry>(lruEntries.values())) {
+        for (Entry entry : new ArrayList<>(lruEntries.values())) {
             if (entry.currentEditor != null) {
                 entry.currentEditor.abort();
             }

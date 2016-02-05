@@ -41,10 +41,11 @@ public class RequestManager extends Fragment {
 
             @Override
             public void onNext(Request request) {
-                Log.e(TAG, "request created");
+                //noinspection unchecked
                 into(request);
             }
         });
+        //noinspection unchecked
         return request.load(url);
     }
 
@@ -53,7 +54,6 @@ public class RequestManager extends Fragment {
         if (view == null) {
             return;
         }
-        Log.e(TAG, "request received");
         if (requestMap.containsKey(view)) {
             Request oldRequest = requestMap.get(view);
             requestMap.remove(view);
@@ -64,12 +64,7 @@ public class RequestManager extends Fragment {
 
         Observable.concat(LoaderTask.getFromMem(request), LoaderTask.getFormDisk(request),
                 LoaderTask.getBitmap(request))
-                .takeFirst(bitmap -> {
-                    if(bitmap == null || bitmap.isRecycled()){
-                        return false;
-                    }
-                    return true;
-                })
+                .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
                 .subscribeOn(Schedulers.io()).observeOn
                 (AndroidSchedulers.mainThread())
                 .subscribe

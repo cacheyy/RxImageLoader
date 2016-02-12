@@ -97,9 +97,6 @@ public class LoaderTask {
             }
 
             if (tempOut != null && tempOut.exists()) {
-//                bitmap = Processor.loadFromFilePath(tempOut.getAbsolutePath(), outputStream,
-//                        option,
-//                        loaderConfig);
                 bitmap = Processor.decodeSampledBitmapFromFile(tempOut.getAbsolutePath(), request
                         .getOption());
             }

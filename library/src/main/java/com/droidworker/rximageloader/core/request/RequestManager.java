@@ -69,12 +69,6 @@ public class RequestManager extends Fragment {
                 (AndroidSchedulers.mainThread())
                 .subscribe
                         (request);
-//        Observable.concat(LoaderTask.getFromMem(request), LoaderTask.getFormDisk(request))
-//                .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
-//                .subscribeOn(Schedulers.io()).observeOn
-//                (AndroidSchedulers.mainThread())
-//                .subscribe
-//                        (request);
     }
 
     @Override

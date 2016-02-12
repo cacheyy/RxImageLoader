@@ -26,6 +26,7 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     protected Option mOption = new Option();
     protected WeakReference<View> mReference;
     protected Action1<Float> onProgress;
+    protected ImageView.ScaleType mScaleType = null;
     /**
      * If this is true, then we will not cache the bitmap in memory
      */
@@ -114,7 +115,12 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         return this;
     }
 
-    public Request tempConfig() {
+    public Request scaleType(ImageView.ScaleType scaleType){
+        this.mScaleType = scaleType;
+        return this;
+    }
+
+    public Request tempConfig(LoaderConfig tempConfig) {
         return this;
     }
 
@@ -236,7 +242,11 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         view.post(() -> view.setBackgroundResource(0));
 //        view.setBackgroundResource(0);
         if (view instanceof ImageView) {
-            ((ImageView) view).setImageBitmap(requestResult);
+            final ImageView imageView = ((ImageView)view);
+            if(mScaleType != null){
+                imageView.setScaleType(mScaleType);
+            }
+            imageView.setImageBitmap(requestResult);
         } else {
             if (Utils.hasJellyBean()) {
                 view.setBackground(new BitmapDrawable(view.getResources(), requestResult));

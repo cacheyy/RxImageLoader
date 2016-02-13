@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.droidworker.rximageloader.core.ImageLoader;
+import com.droidworker.rximageloader.core.LoaderCore;
 import com.droidworker.rximageloader.core.LoaderTask;
 
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class RequestManager extends Fragment {
     private Map<View, Request<Bitmap>> requestMap = new HashMap<>();
 
     public Request<Bitmap> load(String url) {
-        Request<Bitmap> request = new Request<>(ImageLoader.getInstance().getGlobalConfig());
+        Request<Bitmap> request = new Request<>(LoaderCore.getGlobalConfig());
         request.setNotifySubscriber(new Subscriber<Request>() {
             @Override
             public void onCompleted() {
@@ -94,7 +95,7 @@ public class RequestManager extends Fragment {
     public void onLowMemory() {
         super.onLowMemory();
         unsubscribeAll();
-        ImageLoader.getInstance().clearMemory();
+        LoaderCore.clearMemory();
     }
 
     /**

@@ -23,10 +23,14 @@ import rx.functions.Action1;
 public class Request<T extends Bitmap> extends Subscriber<T> {
     private static final String TAG = "Request";
     protected String mPath;
-    protected Option mOption = new Option();
     protected WeakReference<View> mReference;
     protected Action1<Float> onProgress;
     protected ImageView.ScaleType mScaleType = null;
+    public int reqWidth;
+    public int reqHeight;
+    public Bitmap.Config mConfig;
+    public Bitmap.CompressFormat mCompressFormat;
+    public int mCompressQuality;
     /**
      * If this is true, then we will not cache the bitmap in memory
      */
@@ -50,9 +54,9 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     private Subscriber<Request> internalSubscriber;
 
     public Request(LoaderConfig loaderConfig) {
-        mOption.config = loaderConfig.mConfig;
-        mOption.reqWidth = loaderConfig.screenWidth / 4;
-        mOption.reqHeight = loaderConfig.screenHeight / 4;
+        mConfig = loaderConfig.mConfig;
+        reqWidth = loaderConfig.screenWidth / 4;
+        reqHeight = loaderConfig.screenHeight / 4;
     }
 
     /**
@@ -115,12 +119,23 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         return this;
     }
 
-    public Request scaleType(ImageView.ScaleType scaleType){
+    public Request scaleType(ImageView.ScaleType scaleType) {
         this.mScaleType = scaleType;
         return this;
     }
 
-    public Request tempConfig(LoaderConfig tempConfig) {
+    public Request tempConfig(Bitmap.Config config) {
+        this.mConfig = config;
+        return this;
+    }
+
+    public Request tempConfig(Bitmap.CompressFormat compressFormat) {
+        this.mCompressFormat = compressFormat;
+        return this;
+    }
+
+    public Request tempConfig(int compressQuality) {
+        this.mCompressQuality = compressQuality;
         return this;
     }
 
@@ -155,13 +170,6 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     }
 
     /**
-     * @return the options about this request
-     */
-    public Option getOption() {
-        return mOption;
-    }
-
-    /**
      * @return the path
      */
     public String getPath() {
@@ -187,7 +195,6 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
      */
     public void clear() {
         mPath = null;
-        mOption = null;
         mReference.clear();
         skipCacheInMem = false;
         skipCacheInDisk = false;
@@ -242,8 +249,8 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         view.post(() -> view.setBackgroundResource(0));
 //        view.setBackgroundResource(0);
         if (view instanceof ImageView) {
-            final ImageView imageView = ((ImageView)view);
-            if(mScaleType != null){
+            final ImageView imageView = ((ImageView) view);
+            if (mScaleType != null) {
                 imageView.setScaleType(mScaleType);
             }
             imageView.setImageBitmap(requestResult);
@@ -264,9 +271,23 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         return mReference == null || mReference.get() == null;
     }
 
-    public class Option {
-        public int reqWidth;
-        public int reqHeight;
-        public Bitmap.Config config = Bitmap.Config.RGB_565;
+    public int getReqWidth() {
+        return reqWidth;
+    }
+
+    public int getReqHeight() {
+        return reqHeight;
+    }
+
+    public Bitmap.Config getConfig() {
+        return mConfig;
+    }
+
+    public Bitmap.CompressFormat getCompressFormat() {
+        return mCompressFormat;
+    }
+
+    public int getCompressQuality() {
+        return mCompressQuality;
     }
 }

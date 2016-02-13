@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 
-import com.droidworker.rximageloader.cache.DroidCacheManager;
-import com.droidworker.rximageloader.cache.interfaces.ICacheManager;
 import com.droidworker.rximageloader.core.request.RequestManager;
 import com.droidworker.rximageloader.core.request.RequestManagerCreator;
 import com.droidworker.rximageloader.core.request.SupportRequestManager;
@@ -14,28 +12,8 @@ import com.droidworker.rximageloader.core.request.SupportRequestManager;
  * @author DroidWorkerLYF
  */
 public class ImageLoader {
-    private static ImageLoader INSTANCE;
-    private LoaderConfig mGlobalConfig;
-    private DroidCacheManager cacheManager;
 
     private ImageLoader() {
-        cacheManager = new DroidCacheManager();
-    }
-
-    /**
-     * should only used for set properties,if you want to load resource,use with(Context context)
-     *
-     * @return a singleton of ImageLoader
-     */
-    public static ImageLoader getInstance() {
-        if (INSTANCE == null) {
-            synchronized (ImageLoader.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new ImageLoader();
-                }
-            }
-        }
-        return INSTANCE;
     }
 
     public static RequestManager with(Context context) {
@@ -64,36 +42,25 @@ public class ImageLoader {
     }
 
     private static void isReady() {
-        if (INSTANCE.mGlobalConfig == null) {
+        if (LoaderCore.getGlobalConfig() == null) {
             throw new IllegalStateException("You should set a global loader config before use");
         }
     }
 
-    public void clearCache() {
-        cacheManager.clearAll();
+    public static void clearCache() {
+        LoaderCore.clearCache();
     }
 
-    public void clearMemory() {
-        cacheManager.clearMemCache();
+    public static void clearMemory() {
+        LoaderCore.clearMemory();
     }
 
-    public void clearDisk() {
-        cacheManager.clearDiskCache();
+    public static void clearDisk() {
+        LoaderCore.clearDisk();
     }
 
-    public void setGlobalLoaderConfig(LoaderConfig loaderConfig) {
-        if (mGlobalConfig != null) {
-            throw new IllegalStateException("Global loader config has been set");
-        }
-        this.mGlobalConfig = loaderConfig;
-        cacheManager.init(loaderConfig);
+    public static void setGlobalLoaderConfig(LoaderConfig loaderConfig) {
+        LoaderCore.setGlobalLoaderConfig(loaderConfig);
     }
 
-    public ICacheManager getCacheManager(){
-        return cacheManager;
-    }
-
-    public LoaderConfig getGlobalConfig(){
-        return mGlobalConfig;
-    }
 }

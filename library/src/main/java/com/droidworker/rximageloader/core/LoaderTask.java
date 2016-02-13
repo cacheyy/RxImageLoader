@@ -27,11 +27,11 @@ public class LoaderTask {
     private static final int IO_BUFFER_SIZE = 8 * 1024;
 
     public static Observable<Bitmap> getFromMem(Request request) {
-        return ImageLoader.getInstance().getCacheManager().getFromMem(request);
+        return LoaderCore.getCacheManager().getFromMem(request);
     }
 
     public static Observable<Bitmap> getFormDisk(Request request) {
-        return ImageLoader.getInstance().getCacheManager().getFormDisk(request);
+        return LoaderCore.getCacheManager().getFormDisk(request);
     }
 
     public static Observable<Bitmap> getBitmap(Request request) {
@@ -47,9 +47,9 @@ public class LoaderTask {
             } else {
                 //This is a local file
                 Bitmap bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
-                        .getOption());
-                ImageLoader.getInstance().getCacheManager().putInMem(request.getKey(), bitmap);
-                ImageLoader.getInstance().getCacheManager().putInDisk(request.getKey(), bitmap);
+                        .getReqWidth(), request.getReqHeight(), request.getConfig());
+                LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
+                LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
                 subscriber.onNext(bitmap);
                 Log.e(TAG, "" + bitmap.toString());
             }
@@ -98,7 +98,7 @@ public class LoaderTask {
 
             if (tempOut != null && tempOut.exists()) {
                 bitmap = Processor.decodeSampledBitmapFromFile(tempOut.getAbsolutePath(), request
-                        .getOption());
+                        .getReqWidth(), request.getReqHeight(), request.getConfig());
             }
         } catch (MalformedURLException e) {
         } catch (IOException e) {

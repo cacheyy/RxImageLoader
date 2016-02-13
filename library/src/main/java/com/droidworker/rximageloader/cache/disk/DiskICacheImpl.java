@@ -141,7 +141,8 @@ public class DiskICacheImpl implements ICache {
                                 if (inputStream != null) {
                                     Log.e(TAG, "hit disk");
                                     FileDescriptor fd = ((FileInputStream) inputStream).getFD();
-                                    bitmap = Processor.decodeBitmapFromFileDescriptor(fd, request.getOption());
+                                    bitmap = Processor.decodeBitmapFromFileDescriptor(fd, request
+                                            .getReqWidth(), request.getReqHeight(), request.getConfig());
                                     subscriber.onNext(bitmap);
                                 }
                             }

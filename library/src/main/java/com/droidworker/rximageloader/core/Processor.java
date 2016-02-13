@@ -5,8 +5,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.droidworker.rximageloader.core.request.Request;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
@@ -26,17 +24,19 @@ public class Processor {
      * decode bitmap form file descriptor
      *
      * @param fileDescriptor
-     * @param option
-     * @return decode bitmap
+     * @param reqWidth
+     * @param reqHeight
+     * @param config
+     * @return decoded bitmap
      */
-    public static Bitmap decodeBitmapFromFileDescriptor(FileDescriptor fileDescriptor, Request.Option
-            option) {
+    public static Bitmap decodeBitmapFromFileDescriptor(FileDescriptor fileDescriptor, int
+            reqWidth, int reqHeight, Bitmap.Config config) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
-        options.inSampleSize = calculateInSampleSize(options, option.reqWidth, option.reqHeight);
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
         options.inJustDecodeBounds = false;
-        options.inPreferredConfig = option.config;
+        options.inPreferredConfig = config;
 
 //        addInBitmapOptions(options, cache);
         return BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
@@ -101,20 +101,18 @@ public class Processor {
      *
      * @param pathString
      * @param outputStream
-     * @param option
-     * @param loaderConfig
      * @return decode bitmap
      */
-    public static Bitmap loadFromFilePath(String pathString, OutputStream outputStream, Request.Option
-            option,
-                                          LoaderConfig loaderConfig) {
+    public static Bitmap loadFromFilePath(String pathString, OutputStream outputStream, int
+            reqWidth, int reqHeight, Bitmap.Config config,
+                                          Bitmap.CompressFormat compressFormat, int compressQuality) {
         FileDescriptor fileDescriptor;
         Bitmap bitmap = null;
         try {
             fileDescriptor = new FileInputStream(pathString).getFD();
-            bitmap = decodeBitmapFromFileDescriptor(fileDescriptor, option);
+            bitmap = decodeBitmapFromFileDescriptor(fileDescriptor, reqWidth, reqHeight, config);
             if (bitmap != null) {
-                bitmap.compress(loaderConfig.mCompressFormat, loaderConfig.mCompressQuality, outputStream);
+                bitmap.compress(compressFormat, compressQuality, outputStream);
             }
 
         } catch (FileNotFoundException e) {
@@ -172,19 +170,19 @@ public class Processor {
      * 从resources中decode图片
      * decode bitmap form resources
      *
-     * @param res    resources
-     * @param resId  the resource's id
-     * @param option option of this request
+     * @param res   resources
+     * @param resId the resource's id
      * @return decoded bitmap
      */
-    public static Bitmap decodeBitmapFromResource(Resources res, int resId, Request.Option option) {
+    public static Bitmap decodeBitmapFromResource(Resources res, int resId, int
+            reqWidth, int reqHeight, Bitmap.Config config) {
 
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeResource(res, resId, options);
 
-        options.inSampleSize = calculateInSampleSize(options, option.reqWidth, option.reqHeight);
-        options.inPreferredConfig = option.config;
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inPreferredConfig = config;
 
 //        addInBitmapOptions(options, cache);
         options.inJustDecodeBounds = false;
@@ -195,18 +193,18 @@ public class Processor {
      * decode bitmap from the given filename
      *
      * @param filename filename of the bitmap
-     * @param option   option of this request
      * @return decoded bitmap
      */
-    static Bitmap decodeSampledBitmapFromFile(String filename, Request.Option option) {
+    static Bitmap decodeSampledBitmapFromFile(String filename, int
+            reqWidth, int reqHeight, Bitmap.Config config) {
 
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(filename, options);
 
-        options.inSampleSize = calculateInSampleSize(options, option.reqWidth, option
-                .reqHeight);
-        options.inPreferredConfig = option.config;
+        options.inSampleSize = calculateInSampleSize(options, reqWidth,
+                reqHeight);
+        options.inPreferredConfig = config;
 
 //        addInBitmapOptions(options, cache);
 

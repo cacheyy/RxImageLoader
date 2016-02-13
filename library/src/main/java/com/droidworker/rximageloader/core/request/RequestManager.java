@@ -73,7 +73,7 @@ public class RequestManager extends Fragment {
         }
         requestMap.put(view, request);
 
-        Observable.concat(LoaderTask.getFromMem(request), LoaderTask.getFormDisk(request),
+        Observable.concat(LoaderTask.memTask(request), LoaderTask.diskTask(request),
                 LoaderTask.getBitmap(request))
                 .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
                 .subscribeOn(Schedulers.io()).observeOn

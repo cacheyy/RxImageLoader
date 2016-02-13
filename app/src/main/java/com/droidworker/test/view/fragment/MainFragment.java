@@ -62,5 +62,10 @@ public class MainFragment extends Fragment {
                 mAdapter.notifyDataSetChanged();
             }
         });
+
+//        ImageBean bean = new ImageBean();
+//        bean.path = "http://img4q.duitang.com/uploads/item/201303/08/20130308121537_tQBXj.jpeg";
+//        mList.add(bean);
+//        mAdapter.notifyDataSetChanged();
     }
 }

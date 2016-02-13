@@ -51,18 +51,20 @@ public class LoaderTask {
             if (subscriber.isUnsubscribed()) {
                 return;
             }
+            Bitmap bitmap = null;
             if (Utils.isUrl(request.getPath())) {
-//                Bitmap bitmap = downloadUrlToStream(request, )
+                bitmap = downloadUrlToStream(request, LoaderCore.getGlobalConfig());
             } else if (Utils.isGif(request.getPath())) {
 
             } else {
                 //This is a local file
-                Bitmap bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
+                bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
                         .getReqWidth(), request.getReqHeight(), request.getConfig());
+            }
+            if(bitmap != null){
                 LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
                 LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
                 subscriber.onNext(bitmap);
-                Log.e(TAG, "" + bitmap.toString());
             }
             subscriber.onCompleted();
         });
@@ -97,14 +99,16 @@ public class LoaderTask {
                 if (tempOut.createNewFile()) {
                     out = new BufferedOutputStream(new FileOutputStream(tempOut), IO_BUFFER_SIZE);
 
-                    final int total = in.available();
+                    final int total = urlConnection.getContentLength();
                     int len;
                     int current = 0;
                     byte[] buffer = new byte[IO_BUFFER_SIZE];
                     while ((len = in.read(buffer)) != -1) {
                         out.write(buffer, 0, len);
                         current += len;
-                        request.onProgress(current * 1.0f / total);
+                        if(total >= 0){
+                            request.onProgress(current * 1.0f / total);
+                        }
                     }
                     out.flush();
                 }

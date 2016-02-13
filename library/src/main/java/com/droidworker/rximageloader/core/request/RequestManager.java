@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
 
-import com.droidworker.rximageloader.core.ImageLoader;
 import com.droidworker.rximageloader.core.LoaderCore;
 import com.droidworker.rximageloader.core.LoaderTask;
 
@@ -27,7 +26,13 @@ public class RequestManager extends Fragment {
     private static final String TAG = "RequestManager";
     private Map<View, Request<Bitmap>> requestMap = new HashMap<>();
 
-    public Request<Bitmap> load(String url) {
+    /**
+     * Create a request and set the load path
+     *
+     * @param path the path of resource
+     * @return a {@link Request}
+     */
+    public Request<Bitmap> load(String path) {
         Request<Bitmap> request = new Request<>(LoaderCore.getGlobalConfig());
         request.setNotifySubscriber(new Subscriber<Request>() {
             @Override
@@ -47,9 +52,14 @@ public class RequestManager extends Fragment {
             }
         });
         //noinspection unchecked
-        return request.load(url);
+        return request.load(path);
     }
 
+    /**
+     * Start a request
+     *
+     * @param request a configured request
+     */
     private void into(Request<Bitmap> request) {
         final View view = request.getAttachedView();
         if (view == null) {
@@ -101,7 +111,7 @@ public class RequestManager extends Fragment {
     /**
      * Unsubscribe all the subscribers
      */
-    private void unsubscribeAll(){
+    private void unsubscribeAll() {
         for (Map.Entry<View, Request<Bitmap>> viewRequestEntry : requestMap.entrySet()) {
             viewRequestEntry.getValue().unsubscribe();
         }

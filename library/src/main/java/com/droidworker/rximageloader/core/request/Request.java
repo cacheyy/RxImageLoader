@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import com.droidworker.rximageloader.core.LoaderConfig;
 import com.droidworker.rximageloader.utils.Utils;
 
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
 import rx.Observable;
@@ -22,14 +23,35 @@ import rx.functions.Action1;
  */
 public class Request<T extends Bitmap> extends Subscriber<T> {
     private static final String TAG = "Request";
+    /**
+     * The path of resource
+     */
     protected String mPath;
     protected WeakReference<View> mReference;
     protected Action1<Float> onProgress;
+    /**
+     * If you load image into {@link ImageView}, you can set ScaleType to this request
+     */
     protected ImageView.ScaleType mScaleType = null;
+    /**
+     * The required width
+     */
     public int reqWidth;
+    /**
+     * The required height
+     */
     public int reqHeight;
+    /**
+     * {@link android.graphics.Bitmap.Config}
+     */
     public Bitmap.Config mConfig;
+    /**
+     * {@link android.graphics.Bitmap.CompressFormat}
+     */
     public Bitmap.CompressFormat mCompressFormat;
+    /**
+     * The compress quality
+     */
     public int mCompressQuality;
     /**
      * If this is true, then we will not cache the bitmap in memory
@@ -60,7 +82,7 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     }
 
     /**
-     * set path
+     * Set path
      *
      * @param path url or local path
      * @return this request
@@ -98,7 +120,7 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     }
 
     /**
-     * set resource id used for {@link Subscriber#onError(Throwable)}
+     * Set resource id used for {@link Subscriber#onError(Throwable)}
      *
      * @param resId the resource id
      * @return this request
@@ -109,7 +131,7 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     }
 
     /**
-     * set resource id used for {@link Subscriber#onStart()}
+     * Set resource id used for {@link Subscriber#onStart()}
      *
      * @param resId the resource id
      * @return this request
@@ -119,28 +141,52 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         return this;
     }
 
+    /**
+     * Set scaleType
+     *
+     * @param scaleType {@link android.widget.ImageView.ScaleType}
+     * @return this request
+     */
     public Request scaleType(ImageView.ScaleType scaleType) {
         this.mScaleType = scaleType;
         return this;
     }
 
-    public Request tempConfig(Bitmap.Config config) {
+    /**
+     * Set config
+     *
+     * @param config {@link android.graphics.Bitmap.Config}
+     * @return this request
+     */
+    public Request localConfig(Bitmap.Config config) {
         this.mConfig = config;
         return this;
     }
 
-    public Request tempConfig(Bitmap.CompressFormat compressFormat) {
+    /**
+     * Set compressFormat
+     *
+     * @param compressFormat {@link android.graphics.Bitmap.CompressFormat}
+     * @return this request
+     */
+    public Request localFormat(Bitmap.CompressFormat compressFormat) {
         this.mCompressFormat = compressFormat;
         return this;
     }
 
-    public Request tempConfig(int compressQuality) {
+    /**
+     * Set compress quality
+     *
+     * @param compressQuality use for {@link Bitmap#compress(Bitmap.CompressFormat, int, OutputStream)}
+     * @return this request
+     */
+    public Request localQuality(int compressQuality) {
         this.mCompressQuality = compressQuality;
         return this;
     }
 
     /**
-     * set the view will be used to set the bitmap
+     * Set the view will be used to set the bitmap
      *
      * @param view the container
      */
@@ -176,6 +222,9 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         return mPath;
     }
 
+    /**
+     * @return key
+     */
     public String getKey() {
         return mPath.substring(mPath.lastIndexOf("/") + 1, mPath.length());
     }
@@ -271,22 +320,37 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
         return mReference == null || mReference.get() == null;
     }
 
+    /**
+     * @return the required width
+     */
     public int getReqWidth() {
         return reqWidth;
     }
 
+    /**
+     * @return the required height
+     */
     public int getReqHeight() {
         return reqHeight;
     }
 
+    /**
+     * @return config
+     */
     public Bitmap.Config getConfig() {
         return mConfig;
     }
 
+    /**
+     * @return compress format
+     */
     public Bitmap.CompressFormat getCompressFormat() {
         return mCompressFormat;
     }
 
+    /**
+     * @return compress quality
+     */
     public int getCompressQuality() {
         return mCompressQuality;
     }

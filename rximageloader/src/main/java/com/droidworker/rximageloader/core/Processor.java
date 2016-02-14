@@ -9,7 +9,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -23,10 +22,10 @@ public class Processor {
      * 从FileDescriptor decode图片
      * decode bitmap form file descriptor
      *
-     * @param fileDescriptor
-     * @param reqWidth
-     * @param reqHeight
-     * @param config
+     * @param fileDescriptor fileDescriptor
+     * @param reqWidth reqWidth
+     * @param reqHeight reqHeight
+     * @param config config
      * @return decoded bitmap
      */
     public static Bitmap decodeBitmapFromFileDescriptor(FileDescriptor fileDescriptor, int
@@ -45,7 +44,7 @@ public class Processor {
     /**
      * 设置inBitmap属性
      *
-     * @param options
+     * @param options options
      */
     private static void addInBitmapOptions(BitmapFactory.Options options) {
         options.inMutable = true;
@@ -62,7 +61,7 @@ public class Processor {
     /**
      * Calculate inSampleSize
      *
-     * @param options
+     * @param options options
      * @param reqWidth  request width
      * @param reqHeight request height
      * @return inSampleSize
@@ -98,9 +97,6 @@ public class Processor {
 
     /**
      * decode bitmap form the given path
-     *
-     * @param pathString
-     * @param outputStream
      * @return decode bitmap
      */
     public static Bitmap loadFromFilePath(String pathString, OutputStream outputStream, int
@@ -115,8 +111,6 @@ public class Processor {
                 bitmap.compress(compressFormat, compressQuality, outputStream);
             }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -152,6 +146,7 @@ public class Processor {
             }
             return true;
         } catch (final IOException e) {
+            e.printStackTrace();
         } finally {
             try {
                 if (out != null) {
@@ -161,6 +156,7 @@ public class Processor {
                     in.close();
                 }
             } catch (final IOException e) {
+                e.printStackTrace();
             }
         }
         return false;

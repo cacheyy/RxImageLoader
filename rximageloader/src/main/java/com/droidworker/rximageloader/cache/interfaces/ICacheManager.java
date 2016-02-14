@@ -17,7 +17,7 @@ public interface ICacheManager {
     /**
      * Initialize the cache manager according to the given {@link LoaderConfig}
      *
-     * @param loaderConfig
+     * @param loaderConfig the global loader config
      */
     void init(LoaderConfig loaderConfig);
 

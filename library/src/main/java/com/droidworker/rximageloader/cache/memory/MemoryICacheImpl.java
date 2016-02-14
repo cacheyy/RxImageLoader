@@ -2,6 +2,7 @@ package com.droidworker.rximageloader.cache.memory;
 
 import android.graphics.Bitmap;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.LruCache;
 
 import com.droidworker.rximageloader.cache.interfaces.ICache;
@@ -24,6 +25,7 @@ import rx.Subscriber;
  * @author DroidWorkerLYF
  */
 public class MemoryICacheImpl implements ICache {
+    private static final String TAG = "MemoryICacheImpl";
     /**
      * LruCache used for memory cache
      */
@@ -120,9 +122,11 @@ public class MemoryICacheImpl implements ICache {
         return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
-                if (!subscriber.isUnsubscribed()) {
-                    subscriber.onNext(mMemoryCache.get(request.getPath()));
+                if(subscriber.isUnsubscribed()){
+                    return;
                 }
+                Log.e(TAG, "search memory");
+                subscriber.onNext(mMemoryCache.get(request.getKey()));
                 subscriber.onCompleted();
             }
         });

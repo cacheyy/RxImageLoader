@@ -46,8 +46,8 @@ public class DiskICacheImpl implements ICache {
             if (mDiskLruCache == null || mDiskLruCache.isClosed()) {
                 File diskCacheDir = new File(loaderConfig.diskCachePath);
                 if (!diskCacheDir.exists()) {
-                    if(diskCacheDir.mkdirs()){
-                        if(loaderConfig.isDebug){
+                    if (diskCacheDir.mkdirs()) {
+                        if (loaderConfig.isDebug) {
                             Log.w(TAG, "disk cache mkdirs fail");
                         }
                     }
@@ -85,9 +85,9 @@ public class DiskICacheImpl implements ICache {
                 final String path = Utils.hashKeyForDisk(key);
                 OutputStream out = null;
                 try {
-                    DiskLruCache.Snapshot snapshot = mDiskLruCache.get(key);
+                    DiskLruCache.Snapshot snapshot = mDiskLruCache.get(path);
                     if (snapshot == null) {
-                        final DiskLruCache.Editor editor = mDiskLruCache.edit(key);
+                        final DiskLruCache.Editor editor = mDiskLruCache.edit(path);
                         if (editor != null) {
                             out = editor.newOutputStream(DISK_CACHE_INDEX);
                             bitmap.compress(mLoaderConfig.mCompressFormat,
@@ -118,8 +118,11 @@ public class DiskICacheImpl implements ICache {
         return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
-
-                final String path = Utils.hashKeyForDisk(request.getPath());
+                if (subscriber.isUnsubscribed()) {
+                    return;
+                }
+                Log.e(TAG, "search disk");
+                final String path = Utils.hashKeyForDisk(request.getKey());
                 Bitmap bitmap;
                 synchronized (mDiskCacheLockObject) {
                     while (mDiskCacheStarting) {
@@ -136,8 +139,10 @@ public class DiskICacheImpl implements ICache {
                             if (snapshot != null) {
                                 inputStream = snapshot.getInputStream(DISK_CACHE_INDEX);
                                 if (inputStream != null) {
+                                    Log.e(TAG, "hit disk");
                                     FileDescriptor fd = ((FileInputStream) inputStream).getFD();
-                                    bitmap = Processor.decodeBitmapFromFileDescriptor(fd, request.getOption());
+                                    bitmap = Processor.decodeBitmapFromFileDescriptor(fd, request
+                                            .getReqWidth(), request.getReqHeight(), request.getConfig());
                                     subscriber.onNext(bitmap);
                                 }
                             }
@@ -155,8 +160,8 @@ public class DiskICacheImpl implements ICache {
                         }
 
                     }
+                    subscriber.onCompleted();
                 }
-                subscriber.onCompleted();
             }
         });
     }

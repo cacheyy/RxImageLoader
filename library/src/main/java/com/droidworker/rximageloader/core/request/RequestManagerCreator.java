@@ -27,6 +27,9 @@ public class RequestManagerCreator {
 
     }
 
+    /**
+     * @return the single instance of {@link RequestManagerCreator}
+     */
     public static RequestManagerCreator get() {
         return INSTANCE;
     }

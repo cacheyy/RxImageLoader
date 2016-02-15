@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.droidworker.rximageloader.core.LoaderConfig;
+import com.droidworker.rximageloader.core.LoaderTask;
 import com.droidworker.rximageloader.utils.Utils;
 
 import java.io.OutputStream;
@@ -21,7 +22,7 @@ import rx.functions.Action1;
  *
  * @author DroidWorkerLYF
  */
-public class Request<T extends Bitmap> extends Subscriber<T> {
+public class Request extends Subscriber<Bitmap> {
     private static final String TAG = "Request";
     /**
      * The path of resource
@@ -186,11 +187,27 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     }
 
     /**
-     * Set the view will be used to set the bitmap
+     * Set the view will be used to set the bitmap and notify {@link RequestManager} to trigger
+     * this request
      *
      * @param view the container
      */
     public void into(View view) {
+        prepare(view);
+        Observable.just(this).subscribe(internalSubscriber);
+    }
+
+    /**
+     * Set the view will be used to set the bitmap and create a new load task
+     * @param view the container
+     * @return An Observable of load task
+     */
+    public Observable<Bitmap> intoRx(View view){
+        prepare(view);
+        return LoaderTask.newTask(this);
+    }
+
+    private void prepare(View view){
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
         }
@@ -198,7 +215,6 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
             mReference.clear();
         }
         mReference = new WeakReference<>(view);
-        Observable.just(this).subscribe(internalSubscriber);
     }
 
     /**
@@ -289,7 +305,7 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     }
 
     @Override
-    public void onNext(T requestResult) {
+    public void onNext(Bitmap requestResult) {
         if (isUnsubscribed() || checkNull()) {
             return;
         }

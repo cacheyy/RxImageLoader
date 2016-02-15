@@ -1,7 +1,6 @@
 package com.droidworker.rximageloader.core.request;
 
 import android.app.Fragment;
-import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
 
@@ -24,7 +23,7 @@ import rx.schedulers.Schedulers;
  */
 public class RequestManager extends Fragment {
     private static final String TAG = "RequestManager";
-    private Map<View, Request<Bitmap>> requestMap = new HashMap<>();
+    private Map<View, Request> requestMap = new HashMap<>();
 
     /**
      * Create a request and set the load path
@@ -32,8 +31,8 @@ public class RequestManager extends Fragment {
      * @param path the path of resource
      * @return a {@link Request}
      */
-    public Request<Bitmap> load(String path) {
-        Request<Bitmap> request = new Request<>(LoaderCore.getGlobalConfig());
+    public Request load(String path) {
+        Request request = new Request(LoaderCore.getGlobalConfig());
         request.setNotifySubscriber(new Subscriber<Request>() {
             @Override
             public void onCompleted() {
@@ -60,7 +59,7 @@ public class RequestManager extends Fragment {
      *
      * @param request a configured request
      */
-    private void into(Request<Bitmap> request) {
+    private void into(Request request) {
         final View view = request.getAttachedView();
         if (view == null) {
             return;
@@ -112,7 +111,7 @@ public class RequestManager extends Fragment {
      * Unsubscribe all the subscribers
      */
     private void unsubscribeAll() {
-        for (Map.Entry<View, Request<Bitmap>> viewRequestEntry : requestMap.entrySet()) {
+        for (Map.Entry<View, Request> viewRequestEntry : requestMap.entrySet()) {
             viewRequestEntry.getValue().unsubscribe();
         }
     }

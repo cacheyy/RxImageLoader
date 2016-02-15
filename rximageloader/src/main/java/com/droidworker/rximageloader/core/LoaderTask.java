@@ -15,6 +15,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * In charge of creating {@link Observable} to deal with the request
@@ -24,6 +26,13 @@ import rx.Observable;
 public class LoaderTask {
     private static final String TAG = "LoaderTask";
     private static final int IO_BUFFER_SIZE = 8 * 1024;
+
+    public static Observable<Bitmap> newTask(Request request){
+        return Observable.concat(memTask(request), diskTask(request),getBitmap(request))
+                .takeFirst(bitmap -> bitmap!=null && !bitmap.isRecycled())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
 
     /**
      * @param request {@link Request}

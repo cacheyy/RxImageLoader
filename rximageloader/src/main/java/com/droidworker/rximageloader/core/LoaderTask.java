@@ -61,7 +61,7 @@ public class LoaderTask {
                 bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
                         .getReqWidth(), request.getReqHeight(), request.getConfig());
             }
-            if(bitmap != null){
+            if (bitmap != null) {
                 LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
                 LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
                 subscriber.onNext(bitmap);
@@ -106,7 +106,7 @@ public class LoaderTask {
                     while ((len = in.read(buffer)) != -1) {
                         out.write(buffer, 0, len);
                         current += len;
-                        if(total >= 0){
+                        if (total >= 0) {
                             request.onProgress(current * 1.0f / total);
                         }
                     }
@@ -138,4 +138,5 @@ public class LoaderTask {
 
         return bitmap;
     }
+
 }

@@ -27,9 +27,15 @@ public class LoaderTask {
     private static final String TAG = "LoaderTask";
     private static final int IO_BUFFER_SIZE = 8 * 1024;
 
-    public static Observable<Bitmap> newTask(Request request){
-        return Observable.concat(memTask(request), diskTask(request),getBitmap(request))
-                .takeFirst(bitmap -> bitmap!=null && !bitmap.isRecycled())
+    /**
+     * Create a new task to get bitmap
+     *
+     * @param request {@link Request}
+     * @return a new task
+     */
+    public static Observable<Bitmap> newTask(Request request) {
+        return Observable.concat(memTask(request), diskTask(request), getBitmap(request))
+                .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -80,7 +86,8 @@ public class LoaderTask {
     }
 
     /**
-     * Download picture form the url
+     * Download picture form the url, because I don't want Processor rely on Request, so
+     * I write this method here
      *
      * @param request {@link Request}
      * @return decoded bitmap

@@ -198,16 +198,18 @@ public class Request extends Subscriber<Bitmap> {
     }
 
     /**
-     * Set the view will be used to set the bitmap and create a new load task
+     * Set the view will be used to set the bitmap and create a new load task, you should
+     * manage this request by yourself
+     *
      * @param view the container
      * @return An Observable of load task
      */
-    public Observable<Bitmap> intoRx(View view){
+    public Observable<Bitmap> intoRx(View view) {
         prepare(view);
         return LoaderTask.newTask(this);
     }
 
-    private void prepare(View view){
+    private void prepare(View view) {
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
         }

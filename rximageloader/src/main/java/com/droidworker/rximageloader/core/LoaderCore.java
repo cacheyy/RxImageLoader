@@ -5,17 +5,24 @@ import com.droidworker.rximageloader.cache.interfaces.ICacheManager;
 
 /**
  * This class is used to storage objects
+ *
  * @author DroidWorkerLYF
  */
 public class LoaderCore {
+    /**
+     * The global config
+     */
     private static LoaderConfig mGlobalConfig;
+    /**
+     * Cache manager
+     */
     private static DroidCacheManager cacheManager = new DroidCacheManager();
 
-    public static ICacheManager getCacheManager(){
+    public static ICacheManager getCacheManager() {
         return cacheManager;
     }
 
-    public static LoaderConfig getGlobalConfig(){
+    public static LoaderConfig getGlobalConfig() {
         return mGlobalConfig;
     }
 

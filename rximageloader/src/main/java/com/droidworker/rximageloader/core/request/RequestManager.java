@@ -10,11 +10,6 @@ import com.droidworker.rximageloader.core.LoaderTask;
 import java.util.HashMap;
 import java.util.Map;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
-
 /**
  * RequestManager is bind to an activity or a fragment and provide life cycle support
  * for request
@@ -33,24 +28,7 @@ public class RequestManager extends Fragment {
      */
     public Request load(String path) {
         Request request = new Request(LoaderCore.getGlobalConfig());
-        request.setNotifySubscriber(new Subscriber<Request>() {
-            @Override
-            public void onCompleted() {
-                unsubscribe();
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(Request request) {
-                //noinspection unchecked
-                into(request);
-            }
-        });
-        //noinspection unchecked
+        request.setNotifySubscriber(request1 -> into(request1));
         return request.load(path);
     }
 
@@ -71,38 +49,26 @@ public class RequestManager extends Fragment {
             oldRequest.clear();
         }
         requestMap.put(view, request);
-
-        Observable.concat(LoaderTask.memTask(request), LoaderTask.diskTask(request),
-                LoaderTask.getBitmap(request))
-                .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
-                .subscribeOn(Schedulers.io()).observeOn
-                (AndroidSchedulers.mainThread())
-                .subscribe
-                        (request);
+        LoaderTask.newTask(request);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         Log.e(TAG, "onPause");
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.e(TAG, "onDestroy");
-        unsubscribeAll();
     }
 
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
+        Log.e(TAG, "onTrimMemory");
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
+        Log.e(TAG, "onLowMemory");
+
         unsubscribeAll();
         LoaderCore.clearMemory();
     }

@@ -10,6 +10,7 @@ import com.droidworker.rximageloader.core.LoaderConfig;
 import com.droidworker.rximageloader.core.LoaderTask;
 import com.droidworker.rximageloader.utils.Utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
@@ -74,7 +75,7 @@ public class Request extends Subscriber<Bitmap> {
      * This {@link Subscriber} is used to notify the {@link RequestManager} that the request has
      * been created and we shall perform a load task
      */
-    private Subscriber<Request> internalSubscriber;
+    private Action1<Request> internalSubscriber;
 
     public Request(LoaderConfig loaderConfig) {
         mConfig = loaderConfig.mConfig;
@@ -209,6 +210,22 @@ public class Request extends Subscriber<Bitmap> {
         return LoaderTask.newTask(this);
     }
 
+    /**
+     * Turn the given bitmap to byte[]
+     *
+     * @param view
+     * @return
+     */
+    public Observable<byte[]> toByte(View view){
+        prepare(view);
+        return LoaderTask.newTask(this)
+                .flatMap(bitmap -> {
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.WEBP, 100, byteArrayOutputStream);
+                    return Observable.just(byteArrayOutputStream.toByteArray());
+                });
+    }
+
     private void prepare(View view) {
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
@@ -222,15 +239,8 @@ public class Request extends Subscriber<Bitmap> {
     /**
      * @param subscriber set this {@link Subscriber} as notify subscriber
      */
-    public void setNotifySubscriber(Subscriber<Request> subscriber) {
+    public void setNotifySubscriber(Action1<Request> subscriber) {
         this.internalSubscriber = subscriber;
-    }
-
-    /**
-     * @return an Observable which will be used to trigger the internalSubscriber
-     */
-    private Observable<Request> get() {
-        return Observable.just(this);
     }
 
     /**

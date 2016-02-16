@@ -27,7 +27,7 @@ public class RequestManager extends Fragment {
      * @return a {@link Request}
      */
     public Request load(String path) {
-        Request request = new Request(LoaderCore.getGlobalConfig());
+        Request request = new Request();
         request.setNotifySubscriber(request1 -> into(request1));
         return request.load(path);
     }
@@ -49,7 +49,7 @@ public class RequestManager extends Fragment {
             oldRequest.clear();
         }
         requestMap.put(view, request);
-        LoaderTask.newTask(request);
+        LoaderTask.newTask(request).subscribe(request);
     }
 
     @Override

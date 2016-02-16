@@ -2,6 +2,7 @@ package com.droidworker.rximageloader.core;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.view.View;
 
 import com.droidworker.rximageloader.core.request.Request;
 import com.droidworker.rximageloader.utils.Utils;
@@ -79,6 +80,8 @@ public class LoaderTask {
             if (bitmap != null) {
                 LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
                 LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
+                View view = request.getAttachedView();
+                Log.e(TAG, " " + view.getMeasuredWidth());
                 subscriber.onNext(bitmap);
             }
             subscriber.onCompleted();

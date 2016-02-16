@@ -83,8 +83,7 @@ public class Request extends Subscriber<Bitmap> {
     public Request() {
         LoaderConfig loaderConfig = LoaderCore.getGlobalConfig();
         mConfig = loaderConfig.mConfig;
-        reqWidth = loaderConfig.screenWidth / 4;
-        reqHeight = loaderConfig.screenHeight / 4;
+        reqWidth = reqHeight = loaderConfig.screenWidth / 4;
     }
 
     /**
@@ -363,8 +362,18 @@ public class Request extends Subscriber<Bitmap> {
     public void clear() {
         mPath = null;
         mReference.clear();
+        onProgress = null;
+        mScaleType = null;
+        reqWidth = reqHeight = LoaderCore.getGlobalConfig().screenWidth / 4;
+        mConfig = null;
+        mCompressFormat = null;
+        mCompressQuality = 100;
         skipCacheInMem = false;
         skipCacheInDisk = false;
+        errorId = 0;
+        placeholderId = 0;
+        internalSubscriber = null;
+        resized = false;
     }
 
     /**

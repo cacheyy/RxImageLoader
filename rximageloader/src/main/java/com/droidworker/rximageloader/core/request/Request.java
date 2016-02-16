@@ -267,7 +267,11 @@ public class Request extends Subscriber<Bitmap> {
             throw new IllegalArgumentException("can not load into a null object");
         }
         if(placeholderId != 0){
-            view.setBackgroundResource(placeholderId);
+            if(view instanceof ImageView){
+                ((ImageView)view).setImageResource(placeholderId);
+            } else {
+                view.setBackgroundResource(placeholderId);
+            }
         }
         if (mReference != null) {
             mReference.clear();

@@ -48,7 +48,7 @@ public class DiskICacheImpl implements ICache {
                 if (!diskCacheDir.exists()) {
                     if (diskCacheDir.mkdirs()) {
                         if (loaderConfig.isDebug) {
-                            Log.w(TAG, "disk cache mkdirs fail");
+                            Log.e(TAG, "disk cache mkdirs fail");
                         }
                     }
                 }
@@ -127,7 +127,7 @@ public class DiskICacheImpl implements ICache {
                 if (subscriber.isUnsubscribed()) {
                     return;
                 }
-                Log.e(TAG, "search disk");
+                Log.i(TAG, "search disk");
                 final String path = Utils.hashKeyForDisk(request.getKey());
                 Bitmap bitmap;
                 synchronized (mDiskCacheLockObject) {
@@ -145,7 +145,7 @@ public class DiskICacheImpl implements ICache {
                             if (snapshot != null) {
                                 inputStream = snapshot.getInputStream(DISK_CACHE_INDEX);
                                 if (inputStream != null) {
-                                    Log.e(TAG, "hit disk");
+                                    Log.i(TAG, "hit disk");
                                     FileDescriptor fd = ((FileInputStream) inputStream).getFD();
                                     bitmap = Processor.decodeBitmapFromFileDescriptor(fd, request
                                             .getReqWidth(), request.getReqHeight(), request.getConfig());

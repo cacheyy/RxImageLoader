@@ -1,7 +1,6 @@
 package com.droidworker.rximageloader.core.request;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 
@@ -55,8 +54,7 @@ public class RequestManager {
             oldRequest.clear();
         }
         requestMap.put(view, request);
-        if(!flying){
-            Log.e(TAG, "new task");
+        if (!flying) {
             LoaderTask.newTask(request).subscribe(request);
         }
     }
@@ -70,9 +68,14 @@ public class RequestManager {
         }
     }
 
-    public void setOnScroll(AbsListView absListView){
+    /**
+     * SetOnScrollListener to a {@link AbsListView}, such as {@link android.widget.ListView}
+     * and {@link android.widget.GridView}
+     * @param absListView
+     */
+    public void setOnScroll(AbsListView absListView) {
         clearAbsWeakReference();
-        if(absScrollListener == null){
+        if (absScrollListener == null) {
             absScrollListener = new AbsListView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -89,23 +92,26 @@ public class RequestManager {
         absWeakReference = new WeakReference<>(absListView);
     }
 
-    private void clearAbsWeakReference(){
-        if(absWeakReference != null){
-            if(absWeakReference.get() != null){
+    private void clearAbsWeakReference() {
+        if (absWeakReference != null) {
+            if (absWeakReference.get() != null) {
                 absWeakReference.get().setOnScrollListener(null);
             }
             absWeakReference.clear();
         }
     }
 
-    public void addOnScroll(RecyclerView recyclerView){
+    public void addOnScroll(RecyclerView recyclerView) {
         clearRecyclerWeakReference();
-        if(recyclerScrollListener == null){
+        if (recyclerScrollListener == null) {
             recyclerScrollListener = new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                     super.onScrollStateChanged(recyclerView, newState);
-                    flying = newState == RecyclerView.SCROLL_STATE_DRAGGING;
+                    flying = newState == RecyclerView.SCROLL_STATE_DRAGGING || newState == RecyclerView.SCROLL_STATE_SETTLING;
+                    if (!flying) {
+                        resumeLoad();
+                    }
                 }
             };
         }
@@ -113,16 +119,30 @@ public class RequestManager {
         recyclerWeakReference = new WeakReference<>(recyclerView);
     }
 
-    private void clearRecyclerWeakReference(){
-        if(recyclerWeakReference != null){
-            if(recyclerWeakReference.get() != null){
+    private void clearRecyclerWeakReference() {
+        if (recyclerWeakReference != null) {
+            if (recyclerWeakReference.get() != null) {
                 recyclerWeakReference.get().removeOnScrollListener(recyclerScrollListener);
             }
             recyclerWeakReference.clear();
         }
     }
 
-    public void onDestroy(){
+    private void resumeLoad() {
+        flying = false;
+        for (Map.Entry<View, Request> viewRequestEntry : requestMap.entrySet()) {
+            Request request = viewRequestEntry.getValue();
+            if (!request.isUnsubscribed()) {
+                LoaderTask.newTask(request).subscribe(request);
+            }
+        }
+    }
+
+    public void pauseLoad() {
+        flying = true;
+    }
+
+    public void onDestroy() {
         clearAbsWeakReference();
         clearRecyclerWeakReference();
         absScrollListener = null;

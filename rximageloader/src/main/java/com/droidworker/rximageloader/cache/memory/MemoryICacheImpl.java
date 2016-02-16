@@ -128,7 +128,7 @@ public class MemoryICacheImpl implements ICache {
                 if(subscriber.isUnsubscribed()){
                     return;
                 }
-                Log.e(TAG, "search memory");
+                Log.i(TAG, "search memory");
                 subscriber.onNext(mMemoryCache.get(request.getKey()));
                 subscriber.onCompleted();
             }

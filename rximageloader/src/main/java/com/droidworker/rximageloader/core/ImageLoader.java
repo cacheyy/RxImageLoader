@@ -6,7 +6,6 @@ import android.content.Context;
 
 import com.droidworker.rximageloader.core.request.RequestManager;
 import com.droidworker.rximageloader.core.request.RequestManagerCreator;
-import com.droidworker.rximageloader.core.request.SupportRequestManager;
 
 /**
  * @author DroidWorkerLYF
@@ -31,12 +30,12 @@ public class ImageLoader {
         return RequestManagerCreator.get().get(fragment);
     }
 
-    public static SupportRequestManager with(android.support.v4.app.FragmentActivity activity) {
+    public static RequestManager with(android.support.v4.app.FragmentActivity activity) {
         isReady();
         return RequestManagerCreator.get().get(activity);
     }
 
-    public static SupportRequestManager with(android.support.v4.app.Fragment fragment) {
+    public static RequestManager with(android.support.v4.app.Fragment fragment) {
         isReady();
         return RequestManagerCreator.get().get(fragment);
     }
@@ -62,5 +61,4 @@ public class ImageLoader {
     public static void setGlobalLoaderConfig(LoaderConfig loaderConfig) {
         LoaderCore.setGlobalLoaderConfig(loaderConfig);
     }
-
 }

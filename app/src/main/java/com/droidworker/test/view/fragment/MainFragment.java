@@ -43,6 +43,7 @@ public class MainFragment extends Fragment {
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2,
                 GridLayoutManager.VERTICAL, false);
         imageList.setLayoutManager(gridLayoutManager);
+//        ImageLoader.with(this).addOnScroll(imageList);
         return view;
     }
 

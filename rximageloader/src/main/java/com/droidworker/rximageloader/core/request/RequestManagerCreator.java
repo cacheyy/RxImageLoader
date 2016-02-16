@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.support.v4.app.FragmentActivity;
 
 import com.droidworker.rximageloader.utils.Utils;
 
@@ -18,10 +19,11 @@ import java.util.Map;
 public class RequestManagerCreator {
     private static final String FRAGMENT_TAG = "com.droidworker.rximageloader.request";
     private static final RequestManagerCreator INSTANCE = new RequestManagerCreator();
-    private Map<FragmentManager, RequestManager> requestManagerMap = new
+    private Map<FragmentManager, RequestManagerFragment> requestManagerMap = new
             HashMap<>();
-    private Map<android.support.v4.app.FragmentManager, SupportRequestManager> supportRequestManagerMap
+    private Map<android.support.v4.app.FragmentManager, SupportRequestManagerFragment> supportRequestManagerMap
             = new HashMap<>();
+    private RequestManager applicationRequestManager;
 
     private RequestManagerCreator() {
 
@@ -39,7 +41,7 @@ public class RequestManagerCreator {
         if (!requestManagerMap.containsKey(fm)) {
             return getRequestManager(fm);
         }
-        return requestManagerMap.get(fm);
+        return requestManagerMap.get(fm).getRequestManager();
     }
 
     public RequestManager get(Fragment fragment) {
@@ -52,41 +54,53 @@ public class RequestManagerCreator {
         if (!requestManagerMap.containsKey(fm)) {
             return getRequestManager(fm);
         }
-        return requestManagerMap.get(fm);
+        return requestManagerMap.get(fm).getRequestManager();
     }
 
     public RequestManager get(Context context) {
-        return get((Activity) context);
+        if(context instanceof FragmentActivity){
+            return get((FragmentActivity)context);
+        } else if(context instanceof Activity){
+            return get((Activity) context);
+        }
+        return getApplicationRequestManager();
+    }
+
+    public RequestManager getApplicationRequestManager(){
+        applicationRequestManager.unsubscribeAll();
+        applicationRequestManager.onDestroy();
+        return applicationRequestManager;
     }
 
     private RequestManager getRequestManager(FragmentManager fm) {
-        RequestManager fragment = new RequestManager();
+        RequestManagerFragment fragment = new RequestManagerFragment();
         requestManagerMap.put(fm, fragment);
         fm.beginTransaction().add(fragment, FRAGMENT_TAG).commit();
-        return fragment;
+        return fragment.getRequestManager();
     }
 
-    public SupportRequestManager get(android.support.v4.app.FragmentActivity activity) {
+    public RequestManager get(android.support.v4.app.FragmentActivity activity) {
         android.support.v4.app.FragmentManager fm = activity.getSupportFragmentManager();
         if (!supportRequestManagerMap.containsKey(fm)) {
             return getSupportRequestManager(fm);
         }
-        return supportRequestManagerMap.get(fm);
+        return supportRequestManagerMap.get(fm).getRequestManager();
     }
 
-    public SupportRequestManager get(android.support.v4.app.Fragment fragment) {
-        android.support.v4.app.FragmentManager fm = fragment.getChildFragmentManager();
-        if (!supportRequestManagerMap.containsKey(fm)) {
-            return getSupportRequestManager(fm);
-        }
-        return supportRequestManagerMap.get(fm);
+    public RequestManager get(android.support.v4.app.Fragment fragment) {
+//        android.support.v4.app.FragmentManager fm = fragment.getChildFragmentManager();
+//
+//        if (!supportRequestManagerMap.containsKey(fm)) {
+//            return getSupportRequestManager(fm);
+//        }
+        return get(fragment.getActivity());
     }
 
-    private SupportRequestManager getSupportRequestManager(android.support.v4.app.FragmentManager fm) {
-        SupportRequestManager fragment = new SupportRequestManager();
+    private RequestManager getSupportRequestManager(android.support.v4.app.FragmentManager fm) {
+        SupportRequestManagerFragment fragment = new SupportRequestManagerFragment();
         supportRequestManagerMap.put(fm, fragment);
         fm.beginTransaction().add(fragment, FRAGMENT_TAG).commit();
-        return fragment;
+        return fragment.getRequestManager();
     }
 
 }

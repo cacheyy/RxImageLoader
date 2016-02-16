@@ -2,7 +2,6 @@ package com.droidworker.rximageloader.core.request;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -390,7 +389,6 @@ public class Request extends Subscriber<Bitmap> {
 
     @Override
     public void onCompleted() {
-        Log.e(TAG, "onCompleted");
         clear();
         unsubscribe();
     }
@@ -400,7 +398,6 @@ public class Request extends Subscriber<Bitmap> {
         if (isUnsubscribed() || checkNull() || errorId == 0) {
             return;
         }
-        Log.e(TAG, "onError");
         View view = mReference.get();
         view.setBackgroundResource(errorId);
     }
@@ -410,7 +407,6 @@ public class Request extends Subscriber<Bitmap> {
         if (isUnsubscribed() || checkNull()) {
             return;
         }
-        Log.e(TAG, "onNext");
         View view = mReference.get();
         view.post(() -> view.setBackgroundResource(0));
 

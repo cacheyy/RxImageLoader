@@ -1,12 +1,13 @@
 package com.droidworker.rximageloader.core.request;
 
-import android.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.AbsListView;
 
-import com.droidworker.rximageloader.core.LoaderCore;
 import com.droidworker.rximageloader.core.LoaderTask;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,9 +17,14 @@ import java.util.Map;
  *
  * @author DroidWorkerLYF
  */
-public class RequestManager extends Fragment {
+public class RequestManager {
     private static final String TAG = "RequestManager";
     private Map<View, Request> requestMap = new HashMap<>();
+    private WeakReference<AbsListView> absWeakReference;
+    private WeakReference<RecyclerView> recyclerWeakReference;
+    private AbsListView.OnScrollListener absScrollListener;
+    private RecyclerView.OnScrollListener recyclerScrollListener;
+    private boolean flying;
 
     /**
      * Create a request and set the load path
@@ -49,36 +55,78 @@ public class RequestManager extends Fragment {
             oldRequest.clear();
         }
         requestMap.put(view, request);
-        LoaderTask.newTask(request).subscribe(request);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.e(TAG, "onPause");
-    }
-
-    @Override
-    public void onTrimMemory(int level) {
-        super.onTrimMemory(level);
-        Log.e(TAG, "onTrimMemory");
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        Log.e(TAG, "onLowMemory");
-
-        unsubscribeAll();
-        LoaderCore.clearMemory();
+        if(!flying){
+            Log.e(TAG, "new task");
+            LoaderTask.newTask(request).subscribe(request);
+        }
     }
 
     /**
      * Unsubscribe all the subscribers
      */
-    private void unsubscribeAll() {
+    public void unsubscribeAll() {
         for (Map.Entry<View, Request> viewRequestEntry : requestMap.entrySet()) {
             viewRequestEntry.getValue().unsubscribe();
         }
+    }
+
+    public void setOnScroll(AbsListView absListView){
+        clearAbsWeakReference();
+        if(absScrollListener == null){
+            absScrollListener = new AbsListView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(AbsListView view, int scrollState) {
+                    flying = scrollState == AbsListView.OnScrollListener.SCROLL_STATE_FLING;
+                }
+
+                @Override
+                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+                }
+            };
+        }
+        absListView.setOnScrollListener(absScrollListener);
+        absWeakReference = new WeakReference<>(absListView);
+    }
+
+    private void clearAbsWeakReference(){
+        if(absWeakReference != null){
+            if(absWeakReference.get() != null){
+                absWeakReference.get().setOnScrollListener(null);
+            }
+            absWeakReference.clear();
+        }
+    }
+
+    public void addOnScroll(RecyclerView recyclerView){
+        clearRecyclerWeakReference();
+        if(recyclerScrollListener == null){
+            recyclerScrollListener = new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    flying = newState == RecyclerView.SCROLL_STATE_DRAGGING;
+                }
+            };
+        }
+        recyclerView.addOnScrollListener(recyclerScrollListener);
+        recyclerWeakReference = new WeakReference<>(recyclerView);
+    }
+
+    private void clearRecyclerWeakReference(){
+        if(recyclerWeakReference != null){
+            if(recyclerWeakReference.get() != null){
+                recyclerWeakReference.get().removeOnScrollListener(recyclerScrollListener);
+            }
+            recyclerWeakReference.clear();
+        }
+    }
+
+    public void onDestroy(){
+        clearAbsWeakReference();
+        clearRecyclerWeakReference();
+        absScrollListener = null;
+        recyclerScrollListener = null;
+        requestMap.clear();
     }
 }

@@ -7,10 +7,12 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.droidworker.rximageloader.core.LoaderConfig;
+import com.droidworker.rximageloader.core.LoaderCore;
 import com.droidworker.rximageloader.core.LoaderTask;
 import com.droidworker.rximageloader.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
@@ -76,11 +78,20 @@ public class Request extends Subscriber<Bitmap> {
      * been created and we shall perform a load task
      */
     private Action1<Request> internalSubscriber;
+    private boolean resized;
 
-    public Request(LoaderConfig loaderConfig) {
+    public Request() {
+        LoaderConfig loaderConfig = LoaderCore.getGlobalConfig();
         mConfig = loaderConfig.mConfig;
         reqWidth = loaderConfig.screenWidth / 4;
         reqHeight = loaderConfig.screenHeight / 4;
+    }
+
+    /**
+     * @param subscriber set this {@link Subscriber} as notify subscriber
+     */
+    public void setNotifySubscriber(Action1<Request> subscriber) {
+        this.internalSubscriber = subscriber;
     }
 
     /**
@@ -188,13 +199,27 @@ public class Request extends Subscriber<Bitmap> {
     }
 
     /**
+     * Set the require size of this request
+     *
+     * @param width  require width
+     * @param height require height
+     * @return this request
+     */
+    public Request resize(int width, int height) {
+        this.reqWidth = width;
+        this.reqHeight = height;
+        resized = true;
+        return this;
+    }
+
+    /**
      * Set the view will be used to set the bitmap and notify {@link RequestManager} to trigger
      * this request
      *
      * @param view the container
      */
     public void into(View view) {
-        prepare(view);
+        prepareView(view);
         Observable.just(this).subscribe(internalSubscriber);
     }
 
@@ -206,27 +231,40 @@ public class Request extends Subscriber<Bitmap> {
      * @return An Observable of load task
      */
     public Observable<Bitmap> intoRx(View view) {
-        prepare(view);
+        prepareView(view);
         return LoaderTask.newTask(this);
     }
 
     /**
      * Turn the given bitmap to byte[]
      *
-     * @param view
-     * @return
+     * @param view just use as a key
+     * @return byte[] of bitmap
      */
-    public Observable<byte[]> toByte(View view){
-        prepare(view);
+    public Observable<byte[]> toByte(View view) {
+        prepareView(view);
         return LoaderTask.newTask(this)
                 .flatMap(bitmap -> {
                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.WEBP, 100, byteArrayOutputStream);
-                    return Observable.just(byteArrayOutputStream.toByteArray());
+                    bitmap.compress(mCompressFormat != null ?
+                                    mCompressFormat : LoaderCore.getGlobalConfig().mCompressFormat,
+                            100, byteArrayOutputStream);
+                    Observable observable = Observable.just(byteArrayOutputStream.toByteArray());
+                    try {
+                        byteArrayOutputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return observable;
                 });
     }
 
-    private void prepare(View view) {
+    /**
+     * Prepare reference of the view
+     *
+     * @param view the container
+     */
+    private void prepareView(View view) {
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
         }
@@ -234,13 +272,10 @@ public class Request extends Subscriber<Bitmap> {
             mReference.clear();
         }
         mReference = new WeakReference<>(view);
-    }
 
-    /**
-     * @param subscriber set this {@link Subscriber} as notify subscriber
-     */
-    public void setNotifySubscriber(Action1<Request> subscriber) {
-        this.internalSubscriber = subscriber;
+        if(placeholderId != 0){
+            view.setBackgroundResource(placeholderId);
+        }
     }
 
     /**
@@ -265,6 +300,61 @@ public class Request extends Subscriber<Bitmap> {
             return null;
         }
         return mReference.get();
+    }
+
+    /**
+     * @return the required width
+     */
+    public int getReqWidth() {
+        if(resized){
+            return reqWidth;
+        }
+        if(!checkNull()){
+            View view = getAttachedView();
+            if(view.getMeasuredWidth() != 0){
+                resized = true;
+                reqWidth = view.getMeasuredWidth();
+            }
+        }
+        return reqWidth;
+    }
+
+    /**
+     * @return the required height
+     */
+    public int getReqHeight() {
+        if(resized){
+            return reqHeight;
+        }
+        if(!checkNull()){
+            View view = getAttachedView();
+            if(view.getMeasuredHeight() != 0){
+                resized = true;
+                reqHeight = view.getMeasuredHeight();
+            }
+        }
+        return reqHeight;
+    }
+
+    /**
+     * @return config
+     */
+    public Bitmap.Config getConfig() {
+        return mConfig;
+    }
+
+    /**
+     * @return compress format
+     */
+    public Bitmap.CompressFormat getCompressFormat() {
+        return mCompressFormat;
+    }
+
+    /**
+     * @return compress quality
+     */
+    public int getCompressQuality() {
+        return mCompressQuality;
     }
 
     /**
@@ -306,17 +396,6 @@ public class Request extends Subscriber<Bitmap> {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        if (isUnsubscribed() || checkNull() || placeholderId == 0) {
-            return;
-        }
-        Log.e(TAG, "onStart");
-        View view = mReference.get();
-        view.post(() -> view.setBackgroundResource(placeholderId));
-    }
-
-    @Override
     public void onNext(Bitmap requestResult) {
         if (isUnsubscribed() || checkNull()) {
             return;
@@ -324,11 +403,13 @@ public class Request extends Subscriber<Bitmap> {
         Log.e(TAG, "onNext");
         View view = mReference.get();
         view.post(() -> view.setBackgroundResource(0));
+
         if (view instanceof ImageView) {
             final ImageView imageView = ((ImageView) view);
             if (mScaleType != null) {
                 imageView.setScaleType(mScaleType);
             }
+
             imageView.setImageBitmap(requestResult);
         } else {
             if (Utils.hasJellyBean()) {
@@ -345,40 +426,5 @@ public class Request extends Subscriber<Bitmap> {
      */
     private boolean checkNull() {
         return mReference == null || mReference.get() == null;
-    }
-
-    /**
-     * @return the required width
-     */
-    public int getReqWidth() {
-        return reqWidth;
-    }
-
-    /**
-     * @return the required height
-     */
-    public int getReqHeight() {
-        return reqHeight;
-    }
-
-    /**
-     * @return config
-     */
-    public Bitmap.Config getConfig() {
-        return mConfig;
-    }
-
-    /**
-     * @return compress format
-     */
-    public Bitmap.CompressFormat getCompressFormat() {
-        return mCompressFormat;
-    }
-
-    /**
-     * @return compress quality
-     */
-    public int getCompressQuality() {
-        return mCompressQuality;
     }
 }

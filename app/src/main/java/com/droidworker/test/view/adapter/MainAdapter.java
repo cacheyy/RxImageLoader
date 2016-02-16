@@ -38,6 +38,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ImageBean bean = mList.get(position);
         ImageLoader.with(holder.itemView.getContext()).load(bean.path)
+                .scaleType(ImageView.ScaleType.FIT_XY)
                 .error(R.drawable.error)
                 .placeholder(R.drawable.loading)
                 .progress(new Action1<Float>() {

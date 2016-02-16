@@ -54,7 +54,8 @@ public class LoaderTask {
      * @return a task that get resource from disk cache
      */
     public static Observable<Bitmap> diskTask(Request request) {
-        return LoaderCore.getCacheManager().getFormDisk(request);
+        return LoaderCore.getCacheManager().getFormDisk(request)
+                .doOnNext(bitmap -> LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap));
     }
 
     /**

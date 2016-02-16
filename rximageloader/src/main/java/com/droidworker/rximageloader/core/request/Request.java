@@ -30,33 +30,33 @@ public class Request extends Subscriber<Bitmap> {
     /**
      * The path of resource
      */
-    protected String mPath;
-    protected WeakReference<View> mReference;
-    protected Action1<Float> onProgress;
+    private String mPath;
+    private WeakReference<View> mReference;
+    private Action1<Float> onProgress;
     /**
      * If you load image into {@link ImageView}, you can set ScaleType to this request
      */
-    protected ImageView.ScaleType mScaleType = null;
+    private ImageView.ScaleType mScaleType = null;
     /**
      * The required width
      */
-    public int reqWidth;
+    private int reqWidth;
     /**
      * The required height
      */
-    public int reqHeight;
+    private int reqHeight;
     /**
      * {@link android.graphics.Bitmap.Config}
      */
-    public Bitmap.Config mConfig;
+    private Bitmap.Config mConfig;
     /**
      * {@link android.graphics.Bitmap.CompressFormat}
      */
-    public Bitmap.CompressFormat mCompressFormat;
+    private Bitmap.CompressFormat mCompressFormat;
     /**
      * The compress quality
      */
-    public int mCompressQuality;
+    private int mCompressQuality;
     /**
      * If this is true, then we will not cache the bitmap in memory
      */
@@ -229,7 +229,7 @@ public class Request extends Subscriber<Bitmap> {
      * @param view the container
      * @return An Observable of load task
      */
-    public Observable<Bitmap> intoRx(View view) {
+    public Observable<Bitmap> observable(View view) {
         prepareView(view);
         return LoaderTask.newTask(this);
     }
@@ -267,14 +267,13 @@ public class Request extends Subscriber<Bitmap> {
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
         }
+        if(placeholderId != 0){
+            view.setBackgroundResource(placeholderId);
+        }
         if (mReference != null) {
             mReference.clear();
         }
         mReference = new WeakReference<>(view);
-
-        if(placeholderId != 0){
-            view.setBackgroundResource(placeholderId);
-        }
     }
 
     /**
@@ -361,7 +360,9 @@ public class Request extends Subscriber<Bitmap> {
      */
     public void clear() {
         mPath = null;
-        mReference.clear();
+        if(mReference != null){
+            mReference.clear();
+        }
         onProgress = null;
         mScaleType = null;
         reqWidth = reqHeight = LoaderCore.getGlobalConfig().screenWidth / 4;

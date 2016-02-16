@@ -114,7 +114,10 @@ public class MemoryICacheImpl implements ICache {
         if (mMemoryCache == null) {
             return;
         }
-        mMemoryCache.put(key, bitmap);
+        Bitmap pre = mMemoryCache.get(key);
+        if(pre == null || !pre.equals(bitmap)){
+            mMemoryCache.put(key, bitmap);
+        }
     }
 
     @Override

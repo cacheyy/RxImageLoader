@@ -1,7 +1,6 @@
 package com.droidworker.rximageloader.core.request;
 
 import android.app.Fragment;
-import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
 
@@ -11,11 +10,6 @@ import com.droidworker.rximageloader.core.LoaderTask;
 import java.util.HashMap;
 import java.util.Map;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
-
 /**
  * RequestManager is bind to an activity or a fragment and provide life cycle support
  * for request
@@ -24,7 +18,7 @@ import rx.schedulers.Schedulers;
  */
 public class RequestManager extends Fragment {
     private static final String TAG = "RequestManager";
-    private Map<View, Request<Bitmap>> requestMap = new HashMap<>();
+    private Map<View, Request> requestMap = new HashMap<>();
 
     /**
      * Create a request and set the load path
@@ -32,26 +26,9 @@ public class RequestManager extends Fragment {
      * @param path the path of resource
      * @return a {@link Request}
      */
-    public Request<Bitmap> load(String path) {
-        Request<Bitmap> request = new Request<>(LoaderCore.getGlobalConfig());
-        request.setNotifySubscriber(new Subscriber<Request>() {
-            @Override
-            public void onCompleted() {
-                unsubscribe();
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(Request request) {
-                //noinspection unchecked
-                into(request);
-            }
-        });
-        //noinspection unchecked
+    public Request load(String path) {
+        Request request = new Request(LoaderCore.getGlobalConfig());
+        request.setNotifySubscriber(request1 -> into(request1));
         return request.load(path);
     }
 
@@ -60,7 +37,7 @@ public class RequestManager extends Fragment {
      *
      * @param request a configured request
      */
-    private void into(Request<Bitmap> request) {
+    private void into(Request request) {
         final View view = request.getAttachedView();
         if (view == null) {
             return;
@@ -72,38 +49,26 @@ public class RequestManager extends Fragment {
             oldRequest.clear();
         }
         requestMap.put(view, request);
-
-        Observable.concat(LoaderTask.memTask(request), LoaderTask.diskTask(request),
-                LoaderTask.getBitmap(request))
-                .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
-                .subscribeOn(Schedulers.io()).observeOn
-                (AndroidSchedulers.mainThread())
-                .subscribe
-                        (request);
+        LoaderTask.newTask(request);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         Log.e(TAG, "onPause");
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.e(TAG, "onDestroy");
-        unsubscribeAll();
     }
 
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
+        Log.e(TAG, "onTrimMemory");
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
+        Log.e(TAG, "onLowMemory");
+
         unsubscribeAll();
         LoaderCore.clearMemory();
     }
@@ -112,7 +77,7 @@ public class RequestManager extends Fragment {
      * Unsubscribe all the subscribers
      */
     private void unsubscribeAll() {
-        for (Map.Entry<View, Request<Bitmap>> viewRequestEntry : requestMap.entrySet()) {
+        for (Map.Entry<View, Request> viewRequestEntry : requestMap.entrySet()) {
             viewRequestEntry.getValue().unsubscribe();
         }
     }

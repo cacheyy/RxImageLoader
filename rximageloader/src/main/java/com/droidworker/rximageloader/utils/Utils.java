@@ -11,7 +11,10 @@ import java.security.NoSuchAlgorithmException;
  */
 public class Utils {
     /**
-     * 将key转为hash，用于文件名
+     * Hash the given key
+     *
+     * @param key the key needed to hash
+     * @return hashed key
      */
     public static String hashKeyForDisk(String key) {
         String cacheKey;
@@ -66,10 +69,11 @@ public class Utils {
 
     /**
      * Check if this path is an Gif
+     *
      * @param path path of request
      * @return true if it is a gif
      */
-    public static boolean isGif(String path){
+    public static boolean isGif(String path) {
         return path.substring(path.length() - 3).toLowerCase().equals("gif");
     }
 }

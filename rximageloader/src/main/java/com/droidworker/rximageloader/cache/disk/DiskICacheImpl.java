@@ -75,7 +75,13 @@ public class DiskICacheImpl implements ICache {
 
     @Override
     public void clearCache() {
-
+        synchronized (mDiskCacheLockObject) {
+            try {
+                mDiskLruCache.delete();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

@@ -7,8 +7,10 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.droidworker.rximageloader.core.LoaderConfig;
+import com.droidworker.rximageloader.core.LoaderTask;
 import com.droidworker.rximageloader.utils.Utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
@@ -21,7 +23,7 @@ import rx.functions.Action1;
  *
  * @author DroidWorkerLYF
  */
-public class Request<T extends Bitmap> extends Subscriber<T> {
+public class Request extends Subscriber<Bitmap> {
     private static final String TAG = "Request";
     /**
      * The path of resource
@@ -73,7 +75,7 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
      * This {@link Subscriber} is used to notify the {@link RequestManager} that the request has
      * been created and we shall perform a load task
      */
-    private Subscriber<Request> internalSubscriber;
+    private Action1<Request> internalSubscriber;
 
     public Request(LoaderConfig loaderConfig) {
         mConfig = loaderConfig.mConfig;
@@ -186,11 +188,45 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     }
 
     /**
-     * Set the view will be used to set the bitmap
+     * Set the view will be used to set the bitmap and notify {@link RequestManager} to trigger
+     * this request
      *
      * @param view the container
      */
     public void into(View view) {
+        prepare(view);
+        Observable.just(this).subscribe(internalSubscriber);
+    }
+
+    /**
+     * Set the view will be used to set the bitmap and create a new load task, you should
+     * manage this request by yourself
+     *
+     * @param view the container
+     * @return An Observable of load task
+     */
+    public Observable<Bitmap> intoRx(View view) {
+        prepare(view);
+        return LoaderTask.newTask(this);
+    }
+
+    /**
+     * Turn the given bitmap to byte[]
+     *
+     * @param view
+     * @return
+     */
+    public Observable<byte[]> toByte(View view){
+        prepare(view);
+        return LoaderTask.newTask(this)
+                .flatMap(bitmap -> {
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.WEBP, 100, byteArrayOutputStream);
+                    return Observable.just(byteArrayOutputStream.toByteArray());
+                });
+    }
+
+    private void prepare(View view) {
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
         }
@@ -198,21 +234,13 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
             mReference.clear();
         }
         mReference = new WeakReference<>(view);
-        Observable.just(this).subscribe(internalSubscriber);
     }
 
     /**
      * @param subscriber set this {@link Subscriber} as notify subscriber
      */
-    public void setNotifySubscriber(Subscriber<Request> subscriber) {
+    public void setNotifySubscriber(Action1<Request> subscriber) {
         this.internalSubscriber = subscriber;
-    }
-
-    /**
-     * @return an Observable which will be used to trigger the internalSubscriber
-     */
-    private Observable<Request> get() {
-        return Observable.just(this);
     }
 
     /**
@@ -289,7 +317,7 @@ public class Request<T extends Bitmap> extends Subscriber<T> {
     }
 
     @Override
-    public void onNext(T requestResult) {
+    public void onNext(Bitmap requestResult) {
         if (isUnsubscribed() || checkNull()) {
             return;
         }

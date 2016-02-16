@@ -15,6 +15,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * In charge of creating {@link Observable} to deal with the request
@@ -24,6 +26,19 @@ import rx.Observable;
 public class LoaderTask {
     private static final String TAG = "LoaderTask";
     private static final int IO_BUFFER_SIZE = 8 * 1024;
+
+    /**
+     * Create a new task to get bitmap
+     *
+     * @param request {@link Request}
+     * @return a new task
+     */
+    public static Observable<Bitmap> newTask(Request request) {
+        return Observable.concat(memTask(request), diskTask(request), getBitmap(request))
+                .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
 
     /**
      * @param request {@link Request}
@@ -61,7 +76,7 @@ public class LoaderTask {
                 bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
                         .getReqWidth(), request.getReqHeight(), request.getConfig());
             }
-            if(bitmap != null){
+            if (bitmap != null) {
                 LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
                 LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
                 subscriber.onNext(bitmap);
@@ -71,7 +86,8 @@ public class LoaderTask {
     }
 
     /**
-     * Download picture form the url
+     * Download picture form the url, because I don't want Processor rely on Request, so
+     * I write this method here
      *
      * @param request {@link Request}
      * @return decoded bitmap
@@ -106,7 +122,7 @@ public class LoaderTask {
                     while ((len = in.read(buffer)) != -1) {
                         out.write(buffer, 0, len);
                         current += len;
-                        if(total >= 0){
+                        if (total >= 0) {
                             request.onProgress(current * 1.0f / total);
                         }
                     }
@@ -138,4 +154,5 @@ public class LoaderTask {
 
         return bitmap;
     }
+
 }

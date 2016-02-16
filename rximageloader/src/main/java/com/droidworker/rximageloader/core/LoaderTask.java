@@ -81,7 +81,6 @@ public class LoaderTask {
                 LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
                 LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
                 View view = request.getAttachedView();
-                Log.e(TAG, " " + view.getMeasuredWidth());
                 subscriber.onNext(bitmap);
             }
             subscriber.onCompleted();

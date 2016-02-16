@@ -78,12 +78,13 @@ public class Request extends Subscriber<Bitmap> {
      * been created and we shall perform a load task
      */
     private Action1<Request> internalSubscriber;
+    private boolean resized;
 
     public Request() {
         LoaderConfig loaderConfig = LoaderCore.getGlobalConfig();
         mConfig = loaderConfig.mConfig;
-        reqWidth = loaderConfig.screenWidth/4;
-        reqHeight = loaderConfig.screenHeight/4;
+        reqWidth = loaderConfig.screenWidth / 4;
+        reqHeight = loaderConfig.screenHeight / 4;
     }
 
     /**
@@ -207,6 +208,7 @@ public class Request extends Subscriber<Bitmap> {
     public Request resize(int width, int height) {
         this.reqWidth = width;
         this.reqHeight = height;
+        resized = true;
         return this;
     }
 
@@ -304,6 +306,16 @@ public class Request extends Subscriber<Bitmap> {
      * @return the required width
      */
     public int getReqWidth() {
+        if(resized){
+            return reqWidth;
+        }
+        if(!checkNull()){
+            View view = getAttachedView();
+            if(view.getMeasuredWidth() != 0){
+                resized = true;
+                reqWidth = view.getMeasuredWidth();
+            }
+        }
         return reqWidth;
     }
 
@@ -311,6 +323,16 @@ public class Request extends Subscriber<Bitmap> {
      * @return the required height
      */
     public int getReqHeight() {
+        if(resized){
+            return reqHeight;
+        }
+        if(!checkNull()){
+            View view = getAttachedView();
+            if(view.getMeasuredHeight() != 0){
+                resized = true;
+                reqHeight = view.getMeasuredHeight();
+            }
+        }
         return reqHeight;
     }
 

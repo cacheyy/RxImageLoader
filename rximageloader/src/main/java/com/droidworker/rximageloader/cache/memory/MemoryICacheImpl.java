@@ -11,8 +11,6 @@ import com.droidworker.rximageloader.core.request.Request;
 import com.droidworker.rximageloader.utils.Utils;
 
 import java.lang.ref.SoftReference;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -40,13 +38,13 @@ public class MemoryICacheImpl implements ICache {
      *
      * @param loaderConfig the global config which contains the memory cache size
      */
-    public MemoryICacheImpl(LoaderConfig loaderConfig) {
+    public MemoryICacheImpl(LoaderConfig loaderConfig, Set<SoftReference<Bitmap>> reusableBitmaps) {
+        mReusableBitmaps = reusableBitmaps;
         initCache(loaderConfig);
     }
 
     @Override
     public void initCache(LoaderConfig loaderConfig) {
-        mReusableBitmaps = Collections.synchronizedSet(new HashSet<>());
         mMemoryCache = new LruCache<String, Bitmap>(loaderConfig.memCacheSize) {
 
             protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {

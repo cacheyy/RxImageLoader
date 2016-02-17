@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Environment;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import java.io.File;
 
@@ -13,11 +14,12 @@ import java.io.File;
  * @author DroidWorkerLYF
  */
 public class LoaderConfig {
+    private static final String TAG = "LoaderConfig";
     private static final int DEFAULT_DISK_CACHE_SIZE = 1024 * 1024 * 20;//KB
     private static final Bitmap.CompressFormat DEFAULT_COMPRESS_FORMAT = Bitmap.CompressFormat.WEBP;
     private static final int DEFAULT_COMPRESS_QUALITY = 100;
     private static final Bitmap.Config DEFAULT_BITMAP_CONFIG = Bitmap.Config.RGB_565;
-    private static final float DEFAULT_MEM_CACHE_PERCENT = 0.25f;
+    private static final float DEFAULT_MEM_CACHE_PERCENT = 0.0625f;
     /** the size of memory cache */
     public final int memCacheSize;
     /** the size of disk cache */
@@ -46,6 +48,7 @@ public class LoaderConfig {
         this.memCacheSizePercent = builder.memCacheSizePercent != 0.0f ? builder.memCacheSizePercent : DEFAULT_MEM_CACHE_PERCENT;
         this.memCacheSize = builder.memCacheSize != 0 ? builder.memCacheSize : Math.round(memCacheSizePercent
                 * Runtime.getRuntime().maxMemory() / 1024);
+        Log.i(TAG, memCacheSize + "");
         this.diskCacheSize = builder.diskCacheSize != 0 ? builder.diskCacheSize : DEFAULT_DISK_CACHE_SIZE;
         this.mCompressFormat = builder.mCompressFormat != null ? builder.mCompressFormat : DEFAULT_COMPRESS_FORMAT;
         this.mCompressQuality = builder.mCompressQuality != 0 ? builder.mCompressQuality : DEFAULT_COMPRESS_QUALITY;

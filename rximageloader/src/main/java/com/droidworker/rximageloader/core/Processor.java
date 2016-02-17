@@ -37,8 +37,8 @@ public class Processor {
         options.inJustDecodeBounds = false;
         options.inPreferredConfig = config;
 
-//        addInBitmapOptions(options, cache);
-        return BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
+        return BitmapFactory.decodeFileDescriptor(fileDescriptor, null, addInBitmapOptions
+                (options));
     }
 
     /**
@@ -46,16 +46,14 @@ public class Processor {
      *
      * @param options options
      */
-    private static void addInBitmapOptions(BitmapFactory.Options options) {
+    private static BitmapFactory.Options addInBitmapOptions(BitmapFactory.Options options) {
         options.inMutable = true;
 
-//        if (cache != null) {
-//            Bitmap inBitmap = cache.getBitmapFromReusableSet(options);
-//
-//            if (inBitmap != null) {
-//                options.inBitmap = inBitmap;
-//            }
-//        }
+        Bitmap inBitmap = LoaderCore.getCacheManager().getBitmapFromReusableSet(options);
+        if (inBitmap != null) {
+            options.inBitmap = inBitmap;
+        }
+        return options;
     }
 
     /**
@@ -180,7 +178,7 @@ public class Processor {
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
         options.inPreferredConfig = config;
 
-//        addInBitmapOptions(options, cache);
+        addInBitmapOptions(options);
         options.inJustDecodeBounds = false;
         return BitmapFactory.decodeResource(res, resId, options);
     }
@@ -202,8 +200,7 @@ public class Processor {
                 reqHeight);
         options.inPreferredConfig = config;
 
-//        addInBitmapOptions(options, cache);
-
+       addInBitmapOptions(options);
         options.inJustDecodeBounds = false;
         return BitmapFactory.decodeFile(filename, options);
     }

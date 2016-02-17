@@ -3,6 +3,7 @@ package com.droidworker.test.model;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.droidworker.test.model.bean.ImageBean;
 
@@ -17,7 +18,7 @@ import rx.Subscriber;
  * @author DroidWorkerLYF
  */
 public class ImageManager {
-
+    private static final String TAG = "ImageManager";
     private Context mContext;
     private static ImageManager instance;
 
@@ -97,6 +98,7 @@ public class ImageManager {
             public void call(Subscriber<? super List<ImageBean>> subscriber) {
                 clearAllImages();
                 allImages.addAll(updateAllImages());
+                Log.i(TAG, allImages.size()+"");
                 subscriber.onNext(allImages);
             }
         });

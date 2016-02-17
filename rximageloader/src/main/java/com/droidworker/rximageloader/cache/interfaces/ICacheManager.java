@@ -1,6 +1,7 @@
 package com.droidworker.rximageloader.cache.interfaces;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import com.droidworker.rximageloader.core.LoaderConfig;
 import com.droidworker.rximageloader.core.request.Request;
@@ -32,6 +33,8 @@ public interface ICacheManager {
      * @return an Observable that contains a task which can get bitmap from disk cache
      */
     Observable<Bitmap> getFormDisk(Request request);
+
+    Bitmap getBitmapFromReusableSet(BitmapFactory.Options options);
 
     void putInMem(String key, Bitmap bitmap);
 

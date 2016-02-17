@@ -69,17 +69,24 @@ public class RequestManager {
     }
 
     /**
-     * SetOnScrollListener to a {@link AbsListView}, such as {@link android.widget.ListView}
-     * and {@link android.widget.GridView}
-     * @param absListView
+     * Set OnScrollListener to a {@link AbsListView}, such as {@link android.widget.ListView}
+     * and {@link android.widget.GridView}, loader will take care of loading when scrolling,
+     * if you need to set your custom scroll listener, just use {@link RequestManager#resumeLoad()}
+     * and {@link RequestManager#pauseLoad()}
+     *
+     * @param absListView the scroll view
      */
-    public void setOnScroll(AbsListView absListView) {
+    public void setOnScrollListener(AbsListView absListView) {
         clearAbsWeakReference();
         if (absScrollListener == null) {
             absScrollListener = new AbsListView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(AbsListView view, int scrollState) {
-                    flying = scrollState == AbsListView.OnScrollListener.SCROLL_STATE_FLING;
+                    flying = scrollState == AbsListView.OnScrollListener.SCROLL_STATE_FLING
+                            || scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
+                    if (!flying) {
+                        resumeLoad();
+                    }
                 }
 
                 @Override
@@ -101,7 +108,13 @@ public class RequestManager {
         }
     }
 
-    public void addOnScroll(RecyclerView recyclerView) {
+    /**
+     * Add OnScrollListener to a {@link RecyclerView}, loader will take care of loading
+     * when scrolling, and the listener will be removed when manager destroyed
+     *
+     * @param recyclerView the scroll view
+     */
+    public void addOnScrollListener(RecyclerView recyclerView) {
         clearRecyclerWeakReference();
         if (recyclerScrollListener == null) {
             recyclerScrollListener = new RecyclerView.OnScrollListener() {
@@ -128,7 +141,10 @@ public class RequestManager {
         }
     }
 
-    private void resumeLoad() {
+    /**
+     * Tell request manager to resume loading
+     */
+    public void resumeLoad() {
         flying = false;
         for (Map.Entry<View, Request> viewRequestEntry : requestMap.entrySet()) {
             Request request = viewRequestEntry.getValue();
@@ -138,6 +154,9 @@ public class RequestManager {
         }
     }
 
+    /**
+     * Tell request manager to pause loading
+     */
     public void pauseLoad() {
         flying = true;
     }

@@ -18,6 +18,7 @@ import java.lang.ref.WeakReference;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action1;
+import rx.functions.Func1;
 
 /**
  * This class contains all things that a task needed
@@ -78,6 +79,7 @@ public class Request extends Subscriber<Bitmap> {
      */
     private Action1<Request> internalSubscriber;
     private boolean resized;
+    private Func1<Bitmap, Bitmap> mTransformer = bitmap -> bitmap;
 
     public Request() {
         LoaderConfig loaderConfig = LoaderCore.getGlobalConfig();
@@ -210,6 +212,11 @@ public class Request extends Subscriber<Bitmap> {
         return this;
     }
 
+    public Request transform(Func1<Bitmap, Bitmap> transformer){
+        this.mTransformer = transformer;
+        return this;
+    }
+
     /**
      * Set the view will be used to set the bitmap and notify {@link RequestManager} to trigger
      * this request
@@ -230,7 +237,7 @@ public class Request extends Subscriber<Bitmap> {
      */
     public Observable<Bitmap> observable(View view) {
         prepareView(view);
-        return LoaderTask.newTask(this);
+        return LoaderTask.newTask(this).map(mTransformer);
     }
 
     /**
@@ -358,6 +365,10 @@ public class Request extends Subscriber<Bitmap> {
         return mCompressQuality;
     }
 
+    public Func1<Bitmap, Bitmap> getTransformer(){
+        return mTransformer;
+    }
+
     /**
      * Clear
      */
@@ -403,7 +414,11 @@ public class Request extends Subscriber<Bitmap> {
             return;
         }
         View view = mReference.get();
-        view.setBackgroundResource(errorId);
+        if (view instanceof ImageView) {
+            ((ImageView)view).setImageResource(errorId);
+        } else {
+            view.setBackgroundResource(errorId);
+        }
     }
 
     @Override

@@ -37,6 +37,7 @@ public class LoaderTask {
     public static Observable<Bitmap> newTask(Request request) {
         return Observable.concat(memTask(request), diskTask(request), getBitmap(request))
                 .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
+                .map(request.getTransformer())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }

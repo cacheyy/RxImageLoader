@@ -1,5 +1,7 @@
 package com.droidworker.rximageloader.core.request;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
@@ -8,6 +10,7 @@ import android.widget.ImageView;
 import com.droidworker.rximageloader.core.LoaderConfig;
 import com.droidworker.rximageloader.core.LoaderCore;
 import com.droidworker.rximageloader.core.LoaderTask;
+import com.droidworker.rximageloader.core.transition.Transition;
 import com.droidworker.rximageloader.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
@@ -80,6 +83,7 @@ public class Request extends Subscriber<Bitmap> {
     private Action1<Request> internalSubscriber;
     private boolean resized;
     private Func1<Bitmap, Bitmap> mTransformer = bitmap -> bitmap;
+    private Transition mTransition;
 
     public Request() {
         LoaderConfig loaderConfig = LoaderCore.getGlobalConfig();
@@ -214,6 +218,11 @@ public class Request extends Subscriber<Bitmap> {
 
     public Request transform(Func1<Bitmap, Bitmap> transformer){
         this.mTransformer = transformer;
+        return this;
+    }
+
+    public Request transition(Transition transition){
+        this.mTransition = transition;
         return this;
     }
 
@@ -429,6 +438,32 @@ public class Request extends Subscriber<Bitmap> {
         View view = mReference.get();
         view.post(() -> view.setBackgroundResource(0));
 
+        if(mTransition == null){
+            setResult(requestResult, view);
+        } else {
+            mTransition.getOut().addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+
+                    setResult(requestResult, view);
+                    view.setVisibility(View.VISIBLE);
+
+                    mTransition.getIn().addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            mTransition.destroy();
+                        }
+                    });
+                    mTransition.getIn().start();
+                }
+            });
+            mTransition.getOut().start();
+        }
+    }
+
+    private void setResult(Bitmap requestResult, View view) {
         if (view instanceof ImageView) {
             final ImageView imageView = ((ImageView) view);
             if (mScaleType != null) {

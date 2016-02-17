@@ -11,6 +11,6 @@ public class RoundCornerTransform implements Func1<Bitmap, Bitmap> {
 
     @Override
     public Bitmap call(Bitmap bitmap) {
-        return null;
+        return bitmap;
     }
 }

@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.droidworker.rximageloader.core.ImageLoader;
-import com.droidworker.rximageloader.core.transformation.CircleTransform;
+import com.droidworker.rximageloader.core.transition.CrossFade;
 import com.droidworker.test.R;
 import com.droidworker.test.model.bean.ImageBean;
 
@@ -38,17 +38,19 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ImageBean bean = mList.get(position);
+        final ImageView view = ((ItemViewHolder) holder).mImageView;
         ImageLoader.with(holder.itemView.getContext()).load(bean.path)
+                .scaleType(ImageView.ScaleType.FIT_XY)
+                .transition(new CrossFade(view))
                 .error(R.drawable.error)
                 .placeholder(R.drawable.loading)
-                .transform(new CircleTransform())
                 .progress(new Action1<Float>() {
                     @Override
                     public void call(Float aFloat) {
                         Log.e("lyf", "progress " + aFloat);
                     }
                 })
-                .into(((ItemViewHolder) holder).mImageView);
+                .into(view);
     }
 
     @Override

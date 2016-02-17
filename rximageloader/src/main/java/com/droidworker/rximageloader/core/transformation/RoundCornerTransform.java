@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import rx.functions.Func1;
 
 /**
+ *
  * @author DroidWorkerLYF
  */
 public class RoundCornerTransform implements Func1<Bitmap, Bitmap> {

@@ -216,12 +216,12 @@ public class Request extends Subscriber<Bitmap> {
         return this;
     }
 
-    public Request transform(Func1<Bitmap, Bitmap> transformer){
+    public Request transform(Func1<Bitmap, Bitmap> transformer) {
         this.mTransformer = transformer;
         return this;
     }
 
-    public Request transition(Transition transition){
+    public Request transition(Transition transition) {
         this.mTransition = transition;
         return this;
     }
@@ -282,9 +282,9 @@ public class Request extends Subscriber<Bitmap> {
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
         }
-        if(placeholderId != 0){
-            if(view instanceof ImageView){
-                ((ImageView)view).setImageResource(placeholderId);
+        if (placeholderId != 0) {
+            if (view instanceof ImageView) {
+                ((ImageView) view).setImageResource(placeholderId);
             } else {
                 view.setBackgroundResource(placeholderId);
             }
@@ -323,12 +323,12 @@ public class Request extends Subscriber<Bitmap> {
      * @return the required width
      */
     public int getReqWidth() {
-        if(resized){
+        if (resized) {
             return reqWidth;
         }
-        if(!checkNull()){
+        if (!checkNull()) {
             View view = getAttachedView();
-            if(view.getMeasuredWidth() != 0){
+            if (view.getMeasuredWidth() != 0) {
                 resized = true;
                 reqWidth = view.getMeasuredWidth();
             }
@@ -340,12 +340,12 @@ public class Request extends Subscriber<Bitmap> {
      * @return the required height
      */
     public int getReqHeight() {
-        if(resized){
+        if (resized) {
             return reqHeight;
         }
-        if(!checkNull()){
+        if (!checkNull()) {
             View view = getAttachedView();
-            if(view.getMeasuredHeight() != 0){
+            if (view.getMeasuredHeight() != 0) {
                 resized = true;
                 reqHeight = view.getMeasuredHeight();
             }
@@ -374,7 +374,7 @@ public class Request extends Subscriber<Bitmap> {
         return mCompressQuality;
     }
 
-    public Func1<Bitmap, Bitmap> getTransformer(){
+    public Func1<Bitmap, Bitmap> getTransformer() {
         return mTransformer;
     }
 
@@ -383,7 +383,7 @@ public class Request extends Subscriber<Bitmap> {
      */
     public void clear() {
         mPath = null;
-        if(mReference != null){
+        if (mReference != null) {
             mReference.clear();
         }
         onProgress = null;
@@ -424,7 +424,7 @@ public class Request extends Subscriber<Bitmap> {
         }
         View view = mReference.get();
         if (view instanceof ImageView) {
-            ((ImageView)view).setImageResource(errorId);
+            ((ImageView) view).setImageResource(errorId);
         } else {
             view.setBackgroundResource(errorId);
         }
@@ -438,7 +438,7 @@ public class Request extends Subscriber<Bitmap> {
         View view = mReference.get();
         view.post(() -> view.setBackgroundResource(0));
 
-        if(mTransition == null){
+        if (mTransition == null) {
             setResult(requestResult, view);
         } else {
             mTransition.getOut().addListener(new AnimatorListenerAdapter() {
@@ -463,6 +463,12 @@ public class Request extends Subscriber<Bitmap> {
         }
     }
 
+    /**
+     * Set result to the view
+     *
+     * @param requestResult result bitmap
+     * @param view          the container
+     */
     private void setResult(Bitmap requestResult, View view) {
         if (view instanceof ImageView) {
             final ImageView imageView = ((ImageView) view);

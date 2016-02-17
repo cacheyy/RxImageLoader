@@ -37,6 +37,7 @@ public class LoaderTask {
     public static Observable<Bitmap> newTask(Request request) {
         return Observable.concat(memTask(request), diskTask(request), getBitmap(request))
                 .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
+                .map(request.getTransformer())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -54,7 +55,9 @@ public class LoaderTask {
      * @return a task that get resource from disk cache
      */
     public static Observable<Bitmap> diskTask(Request request) {
-        return LoaderCore.getCacheManager().getFormDisk(request);
+        return LoaderCore.getCacheManager().getFormDisk(request)
+                .doOnNext(bitmap -> LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap)
+                );
     }
 
     /**

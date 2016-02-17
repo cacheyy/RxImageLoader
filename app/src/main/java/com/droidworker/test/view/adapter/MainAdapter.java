@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.droidworker.rximageloader.core.ImageLoader;
+import com.droidworker.rximageloader.core.transformation.CircleTransform;
 import com.droidworker.test.R;
 import com.droidworker.test.model.bean.ImageBean;
 
@@ -40,6 +41,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ImageLoader.with(holder.itemView.getContext()).load(bean.path)
                 .error(R.drawable.error)
                 .placeholder(R.drawable.loading)
+                .transform(new CircleTransform())
                 .progress(new Action1<Float>() {
                     @Override
                     public void call(Float aFloat) {

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.droidworker.rximageloader.core.ImageLoader;
 import com.droidworker.test.R;
 import com.droidworker.test.model.ImageManager;
 import com.droidworker.test.model.bean.ImageBean;
@@ -43,6 +44,7 @@ public class MainFragment extends Fragment {
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2,
                 GridLayoutManager.VERTICAL, false);
         imageList.setLayoutManager(gridLayoutManager);
+        ImageLoader.with(this).addOnScrollListener(imageList);
         return view;
     }
 

@@ -310,6 +310,14 @@ public class Request extends Subscriber<Bitmap> {
      * @return key
      */
     public String getKey() {
+        getReqWidth();
+        if (resized) {
+            return getReqWidth() + "_" + getReqHeight() + "_" + getRawKey();
+        }
+        return getRawKey();
+    }
+
+    public String getRawKey() {
         return mPath.substring(mPath.lastIndexOf("/") + 1, mPath.length());
     }
 

@@ -47,9 +47,7 @@ public class DiskICacheImpl implements ICache {
                 File diskCacheDir = new File(loaderConfig.diskCachePath);
                 if (!diskCacheDir.exists()) {
                     if (diskCacheDir.mkdirs()) {
-                        if (loaderConfig.isDebug) {
-                            Log.e(TAG, "disk cache mkdirs fail");
-                        }
+                        Log.e(TAG, "disk cache mkdirs fail");
                     }
                 }
                 if (getUsableSpace(diskCacheDir) > loaderConfig.diskCacheSize) {
@@ -128,7 +126,6 @@ public class DiskICacheImpl implements ICache {
                     return;
                 }
                 Log.i(TAG, "search disk");
-                final String path = Utils.hashKeyForDisk(request.getKey());
                 Bitmap bitmap;
                 synchronized (mDiskCacheLockObject) {
                     while (mDiskCacheStarting) {
@@ -141,7 +138,13 @@ public class DiskICacheImpl implements ICache {
                     if (mDiskLruCache != null) {
                         InputStream inputStream = null;
                         try {
+                            String path = Utils.hashKeyForDisk(request.getKey());
                             DiskLruCache.Snapshot snapshot = mDiskLruCache.get(path);
+                            if(snapshot == null){
+                                path = Utils.hashKeyForDisk(request.getRawKey());
+                                Log.i(TAG, "raw " + request.getRawKey());
+                                snapshot = mDiskLruCache.get(path);
+                            }
                             if (snapshot != null) {
                                 inputStream = snapshot.getInputStream(DISK_CACHE_INDEX);
                                 if (inputStream != null) {

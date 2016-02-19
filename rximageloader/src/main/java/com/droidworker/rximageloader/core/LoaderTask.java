@@ -55,6 +55,7 @@ public class LoaderTask {
      * @return a task that get resource from disk cache
      */
     public static Observable<Bitmap> diskTask(Request request) {
+        Log.i(TAG, "diskTask " + request.getKey());
         return LoaderCore.getCacheManager().getFormDisk(request)
                 .doOnNext(bitmap -> LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap)
                 );
@@ -66,14 +67,15 @@ public class LoaderTask {
      */
     public static Observable<Bitmap> getBitmap(Request request) {
         return Observable.create(subscriber -> {
-            Log.i(TAG, "get from origin");
+            Log.i(TAG, "get from origin " + request.getKey());
             if (subscriber.isUnsubscribed()) {
                 return;
             }
             Bitmap bitmap = null;
             if (Utils.isUrl(request.getPath())) {
                 bitmap = downloadUrlToStream(request, LoaderCore.getGlobalConfig());
-            } else if (Utils.isGif(request.getPath())) {
+            } else //noinspection StatementWithEmptyBody
+                if (Utils.isGif(request.getPath())) {
 
             } else {
                 //This is a local file
@@ -82,7 +84,9 @@ public class LoaderTask {
             }
             if (bitmap != null) {
                 LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
-                LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
+                if (LoaderCore.getDiskCacheStrategy().cacheRealSize()) {
+                    LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
+                }
                 View view = request.getAttachedView();
                 subscriber.onNext(bitmap);
             }
@@ -110,7 +114,8 @@ public class LoaderTask {
             urlConnection = (HttpURLConnection) url.openConnection();
             in = new BufferedInputStream(urlConnection.getInputStream(), IO_BUFFER_SIZE);
 
-            tempOut = new File(loaderConfig.tempFilePath + "/" + Utils.hashKeyForDisk(request.getKey()));
+            tempOut = new File(loaderConfig.tempFilePath + File.separator + Utils.hashKeyForDisk(request
+                    .getRawKey()));
             if (!tempOut.exists()) {
                 if (!tempOut.getParentFile().exists()) {
                     if (!tempOut.getParentFile().mkdirs()) {
@@ -138,6 +143,12 @@ public class LoaderTask {
             if (tempOut.exists()) {
                 bitmap = Processor.decodeSampledBitmapFromFile(tempOut.getAbsolutePath(), request
                         .getReqWidth(), request.getReqHeight(), request.getConfig());
+                if (LoaderCore.getDiskCacheStrategy().cacheOrigin()) {
+                    //noinspection ResultOfMethodCallIgnored
+                    tempOut.renameTo(
+                            new File(loaderConfig.diskCachePath + File.separator
+                                    + Utils.hashKeyForDisk(request.getRawKey())));
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

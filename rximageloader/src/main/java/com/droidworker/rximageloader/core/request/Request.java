@@ -282,13 +282,17 @@ public class Request extends Subscriber<Bitmap> {
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
         }
-        if (placeholderId != 0) {
-            if (view instanceof ImageView) {
-                ((ImageView) view).setImageResource(placeholderId);
-            } else {
-                view.setBackgroundResource(placeholderId);
+
+        if (view instanceof ImageView) {
+            final ImageView imageView = ((ImageView) view);
+            if (mScaleType != null) {
+                imageView.setScaleType(mScaleType);
             }
+            imageView.setImageResource(placeholderId);
+        }else {
+            view.setBackgroundResource(placeholderId);
         }
+
         if (mReference != null) {
             mReference.clear();
         }
@@ -471,12 +475,7 @@ public class Request extends Subscriber<Bitmap> {
      */
     private void setResult(Bitmap requestResult, View view) {
         if (view instanceof ImageView) {
-            final ImageView imageView = ((ImageView) view);
-            if (mScaleType != null) {
-                imageView.setScaleType(mScaleType);
-            }
-
-            imageView.setImageBitmap(requestResult);
+            ((ImageView) view).setImageBitmap(requestResult);
         } else {
             if (Utils.hasJellyBean()) {
                 view.setBackground(new BitmapDrawable(view.getResources(), requestResult));

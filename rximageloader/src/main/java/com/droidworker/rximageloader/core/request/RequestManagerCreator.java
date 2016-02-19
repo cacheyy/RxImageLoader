@@ -75,7 +75,7 @@ public class RequestManagerCreator {
     private RequestManager getRequestManager(FragmentManager fm) {
         RequestManagerFragment fragment = new RequestManagerFragment();
         requestManagerMap.put(fm, fragment);
-        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commit();
+        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commitAllowingStateLoss();
         return fragment.getRequestManager();
     }
 
@@ -99,7 +99,7 @@ public class RequestManagerCreator {
     private RequestManager getSupportRequestManager(android.support.v4.app.FragmentManager fm) {
         SupportRequestManagerFragment fragment = new SupportRequestManagerFragment();
         supportRequestManagerMap.put(fm, fragment);
-        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commit();
+        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commitAllowingStateLoss();
         return fragment.getRequestManager();
     }
 

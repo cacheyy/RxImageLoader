@@ -29,7 +29,7 @@ import rx.functions.Func1;
  * @author DroidWorkerLYF
  */
 public class Request extends Subscriber<Bitmap> {
-    private static final String TAG = "Request";
+    private static final String TAG = Request.class.getSimpleName();
     /**
      * The path of resource
      */

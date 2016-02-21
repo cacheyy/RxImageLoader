@@ -25,7 +25,7 @@ import rx.schedulers.Schedulers;
  * @author DroidWorkerLYF
  */
 public class LoaderTask {
-    private static final String TAG = "LoaderTask";
+    private static final String TAG = LoaderTask.class.getSimpleName();
     private static final int IO_BUFFER_SIZE = 8 * 1024;
 
     /**

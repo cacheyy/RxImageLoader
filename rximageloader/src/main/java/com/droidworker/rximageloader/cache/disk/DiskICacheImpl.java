@@ -25,7 +25,7 @@ import rx.Subscriber;
  * @author DroidWorkerLYF
  */
 public class DiskICacheImpl implements ICache {
-    private static final String TAG = "DiskCacheImpl";
+    private static final String TAG = DiskICacheImpl.class.getSimpleName();
     private static final int DISK_CACHE_INDEX = 0;
     /**
      * LruCache used for disk cache

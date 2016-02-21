@@ -17,7 +17,7 @@ import java.util.Map;
  * @author DroidWorkerLYF
  */
 public class RequestManagerCreator {
-    private static final String FRAGMENT_TAG = "com.droidworker.rximageloader.request";
+    private static final String FRAGMENT_TAG = RequestManagerCreator.class.getSimpleName();
     private static final RequestManagerCreator INSTANCE = new RequestManagerCreator();
     private Map<FragmentManager, RequestManagerFragment> requestManagerMap = new
             HashMap<>();

@@ -17,7 +17,7 @@ import java.util.Map;
  * @author DroidWorkerLYF
  */
 public class RequestManager {
-    private static final String TAG = "RequestManager";
+    private static final String TAG = RequestManager.class.getSimpleName();
     private Map<View, Request> requestMap = new HashMap<>();
     private WeakReference<AbsListView> absWeakReference;
     private WeakReference<RecyclerView> recyclerWeakReference;

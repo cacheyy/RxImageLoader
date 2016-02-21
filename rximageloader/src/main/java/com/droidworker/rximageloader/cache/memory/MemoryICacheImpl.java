@@ -23,7 +23,7 @@ import rx.Subscriber;
  * @author DroidWorkerLYF
  */
 public class MemoryICacheImpl implements ICache {
-    private static final String TAG = "MemoryICacheImpl";
+    private static final String TAG = MemoryICacheImpl.class.getSimpleName();
     /**
      * LruCache used for memory cache
      */

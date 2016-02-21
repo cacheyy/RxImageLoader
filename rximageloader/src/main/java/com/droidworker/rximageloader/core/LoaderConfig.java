@@ -16,7 +16,7 @@ import java.io.File;
  * @author DroidWorkerLYF
  */
 public class LoaderConfig {
-    private static final String TAG = "LoaderConfig";
+    private static final String TAG = LoaderConfig.class.getSimpleName();
     private static final int DEFAULT_DISK_CACHE_SIZE = 1024 * 1024 * 20;//KB
     private static final Bitmap.CompressFormat DEFAULT_COMPRESS_FORMAT = Bitmap.CompressFormat.WEBP;
     private static final int DEFAULT_COMPRESS_QUALITY = 100;

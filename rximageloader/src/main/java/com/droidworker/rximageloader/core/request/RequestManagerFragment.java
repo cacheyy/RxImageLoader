@@ -9,7 +9,7 @@ import com.droidworker.rximageloader.core.LoaderCore;
  * @author DroidWorkerLYF
  */
 public class RequestManagerFragment extends Fragment {
-    private static final String TAG = "RequestManagerFragment";
+    private static final String TAG = RequestManagerFragment.class.getSimpleName();
     private RequestManager mRequestManager;
 
     public RequestManagerFragment(){

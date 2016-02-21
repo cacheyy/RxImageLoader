@@ -11,12 +11,15 @@ import com.droidworker.rximageloader.utils.Utils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -173,8 +176,33 @@ public class LoaderTask {
         return bitmap;
     }
 
-    public static Observable<Bitmap> gifTask(Request request){
-        GifDecoder decoder = new GifDecoder();
-        return null;
+    public static Observable<Bitmap> gifTask(Request request) {
+        return Observable.create(new Observable.OnSubscribe<Bitmap>() {
+            @Override
+            public void call(Subscriber<? super Bitmap> subscriber) {
+                if (subscriber.isUnsubscribed()) {
+                    return;
+                }
+                File file = new File(request.getPath());
+                if (!file.exists()) {
+                    subscriber.onError(new Throwable("File not exist"));
+                }
+                try {
+                    GifDecoder decoder = new GifDecoder();
+                    InputStream inputStream = new FileInputStream(file);
+                    decoder.read(inputStream, inputStream.available());
+                    decoder.advance();
+                    for (int i = 0; i < decoder.getFrameCount(); i++) {
+                        if (!subscriber.isUnsubscribed()) {
+                            subscriber.onNext(decoder.getNextFrame());
+                            Thread.sleep(decoder.getDelay(i));
+                        }
+                    }
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                    subscriber.onError(new Throwable("gif task error"));
+                }
+            }
+        }).repeat();
     }
 }

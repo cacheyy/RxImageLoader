@@ -1,6 +1,7 @@
 package com.droidworker.rximageloader.core;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.AnimationDrawable;
 import android.util.Log;
 import android.view.View;
 
@@ -34,7 +35,8 @@ public class LoaderTask {
      * @param request {@link Request}
      * @return a new task
      */
-    public static Observable<Bitmap> newTask(Request request) {
+    public static Observable<Bitmap> bitmapTask(Request request) {
+        //noinspection unchecked
         return Observable.concat(memTask(request), diskTask(request), getBitmap(request))
                 .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
                 .map(request.getTransformer())
@@ -77,11 +79,11 @@ public class LoaderTask {
             } else //noinspection StatementWithEmptyBody
                 if (Utils.isGif(request.getPath())) {
 
-            } else {
-                //This is a local file
-                bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
-                        .getReqWidth(), request.getReqHeight(), request.getConfig());
-            }
+                } else {
+                    //This is a local file
+                    bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
+                            .getReqWidth(), request.getReqHeight(), request.getConfig());
+                }
             if (bitmap != null) {
                 LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
                 if (LoaderCore.getDiskCacheStrategy().cacheRealSize()) {
@@ -171,4 +173,7 @@ public class LoaderTask {
         return bitmap;
     }
 
+    public static Observable<AnimationDrawable> gifTask(Request request){
+        return null;
+    }
 }

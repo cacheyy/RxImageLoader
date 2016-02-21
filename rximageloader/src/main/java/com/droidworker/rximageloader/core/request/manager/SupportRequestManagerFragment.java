@@ -1,18 +1,21 @@
-package com.droidworker.rximageloader.core.request;
+package com.droidworker.rximageloader.core.request.manager;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.droidworker.rximageloader.core.LoaderCore;
 
 /**
+ * SupportRequestManager is bind to an activity or a fragment and provide life cycle support
+ * for request
+ *
  * @author DroidWorkerLYF
  */
-public class RequestManagerFragment extends Fragment {
-    private static final String TAG = RequestManagerFragment.class.getSimpleName();
+public class SupportRequestManagerFragment extends Fragment {
+    private static final String TAG = "SRequestManagerFragment";
     private RequestManager mRequestManager;
 
-    public RequestManagerFragment(){
+    public SupportRequestManagerFragment(){
         if(mRequestManager == null){
             synchronized (this){
                 if(mRequestManager == null){
@@ -36,12 +39,6 @@ public class RequestManagerFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         mRequestManager.onDestroy();
-    }
-
-    @Override
-    public void onTrimMemory(int level) {
-        super.onTrimMemory(level);
-        Log.e(TAG, "onTrimMemory");
     }
 
     @Override

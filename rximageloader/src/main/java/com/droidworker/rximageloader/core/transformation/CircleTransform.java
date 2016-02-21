@@ -11,14 +11,15 @@ import android.graphics.Paint;
  *
  * @author DroidWorkerLYF
  */
-public class CircleTransform extends Transform {
+public class CircleTransform extends Transform<Bitmap, Bitmap> {
+    private Bitmap.Config mConfig = Bitmap.Config.ARGB_8888;
 
     public CircleTransform() {
 
     }
 
     public CircleTransform(Bitmap.Config config) {
-        super(config);
+        this.mConfig = config;
     }
 
     @Override

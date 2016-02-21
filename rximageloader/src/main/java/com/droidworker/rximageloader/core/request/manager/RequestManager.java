@@ -1,10 +1,14 @@
-package com.droidworker.rximageloader.core.request;
+package com.droidworker.rximageloader.core.request.manager;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.AbsListView;
 
 import com.droidworker.rximageloader.core.LoaderTask;
+import com.droidworker.rximageloader.core.request.BitmapRequest;
+import com.droidworker.rximageloader.core.request.GifRequest;
+import com.droidworker.rximageloader.core.request.Request;
+import com.droidworker.rximageloader.utils.Utils;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -32,9 +36,24 @@ public class RequestManager {
      * @return a {@link Request}
      */
     public Request load(String path) {
-        Request request = new Request();
+        Request request;
+        if (Utils.isGif(path)) {
+            return loadGif(path).load(path);
+        } else {
+            return loadBitmap(path).load(path);
+        }
+    }
+
+    public BitmapRequest loadBitmap(String path){
+        BitmapRequest request = new BitmapRequest();
         request.setNotifySubscriber(request1 -> into(request1));
-        return request.load(path);
+        return request;
+    }
+
+    public GifRequest loadGif(String path){
+        GifRequest request = new GifRequest();
+        request.setNotifySubscriber(request1 -> into(request1));
+        return request;
     }
 
     /**
@@ -55,7 +74,11 @@ public class RequestManager {
         }
         requestMap.put(view, request);
         if (!flying) {
-            LoaderTask.newTask(request).subscribe(request);
+            if(request instanceof BitmapRequest){
+                LoaderTask.bitmapTask(request).subscribe(request);
+            } else if(request instanceof GifRequest){
+                LoaderTask.gifTask(request).subscribe(request);
+            }
         }
     }
 
@@ -149,7 +172,7 @@ public class RequestManager {
         for (Map.Entry<View, Request> viewRequestEntry : requestMap.entrySet()) {
             Request request = viewRequestEntry.getValue();
             if (!request.isUnsubscribed()) {
-                LoaderTask.newTask(request).subscribe(request);
+                LoaderTask.bitmapTask(request).subscribe(request);
             }
         }
     }
@@ -166,6 +189,7 @@ public class RequestManager {
         clearRecyclerWeakReference();
         absScrollListener = null;
         recyclerScrollListener = null;
+        unsubscribeAll();
         requestMap.clear();
     }
 }

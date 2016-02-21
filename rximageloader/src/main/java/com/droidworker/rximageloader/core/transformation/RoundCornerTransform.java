@@ -7,12 +7,13 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
-import rx.functions.Func1;
-
 /**
+ * Change the given bitmap to rounded corner shape
+ *
  * @author DroidWorkerLYF
  */
-public class RoundCornerTransform extends Transform implements Func1<Bitmap, Bitmap> {
+public class RoundCornerTransform extends Transform<Bitmap, Bitmap> {
+    private Bitmap.Config mConfig;
     private float rx, ry;
 
     public RoundCornerTransform(float rx, float ry) {
@@ -20,7 +21,7 @@ public class RoundCornerTransform extends Transform implements Func1<Bitmap, Bit
     }
 
     public RoundCornerTransform(float rx, float ry, Bitmap.Config config) {
-        super(config);
+        this.mConfig = config;
         this.rx = rx;
         this.ry = ry;
     }

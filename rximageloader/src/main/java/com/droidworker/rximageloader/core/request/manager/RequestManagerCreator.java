@@ -1,4 +1,4 @@
-package com.droidworker.rximageloader.core.request;
+package com.droidworker.rximageloader.core.request.manager;
 
 import android.app.Activity;
 import android.app.Fragment;

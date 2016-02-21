@@ -36,13 +36,13 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 .item_image, parent, false));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ImageBean bean = mList.get(position);
         final ImageView view = ((ItemViewHolder) holder).mImageView;
         ImageLoader.with(holder.itemView.getContext()).load(bean.path)
                 .scaleType(ImageView.ScaleType.FIT_XY)
-//                .localConfig(Bitmap.Config.RGB_565)
                 .transform(new RoundCornerTransform(30, 30))
                 .transition(new CrossFade(view))
                 .error(R.drawable.error)

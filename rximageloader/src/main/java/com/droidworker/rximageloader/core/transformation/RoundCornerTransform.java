@@ -12,7 +12,7 @@ import android.graphics.RectF;
  *
  * @author DroidWorkerLYF
  */
-public class RoundCornerTransform extends Transform<Bitmap, Bitmap> {
+public class RoundCornerTransform extends Transform {
     private Bitmap.Config mConfig;
     private float rx, ry;
 

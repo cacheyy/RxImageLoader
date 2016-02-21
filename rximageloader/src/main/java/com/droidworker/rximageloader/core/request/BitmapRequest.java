@@ -16,7 +16,7 @@ import rx.Observable;
 /**
  * @author DroidWorkerLYF
  */
-public class BitmapRequest extends Request<Bitmap> {
+public class BitmapRequest extends Request {
 
     /**
      * Set the view will be used to set the bitmap and notify {@link RequestManager} to trigger

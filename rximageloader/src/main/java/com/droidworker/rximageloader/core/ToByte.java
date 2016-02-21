@@ -1,23 +1,25 @@
-package com.droidworker.rximageloader.core.transformation;
+package com.droidworker.rximageloader.core;
 
 import android.graphics.Bitmap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import rx.functions.Func1;
+
 /**
  * Change the given bitmap to byte[]
  *
  * @author DroidWorkerLYF
  */
-public class ByteTransform extends Transform<Bitmap, byte[]> {
+public class ToByte implements Func1<Bitmap, byte[]> {
     private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
 
-    public ByteTransform() {
+    public ToByte() {
 
     }
 
-    public ByteTransform(Bitmap.CompressFormat compressFormat) {
+    public ToByte(Bitmap.CompressFormat compressFormat) {
         this.mCompressFormat = compressFormat;
     }
 

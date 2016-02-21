@@ -1,10 +1,10 @@
 package com.droidworker.rximageloader.core;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.AnimationDrawable;
 import android.util.Log;
 import android.view.View;
 
+import com.droidworker.rximageloader.core.gif.GifDecoder;
 import com.droidworker.rximageloader.core.request.Request;
 import com.droidworker.rximageloader.utils.Utils;
 
@@ -173,7 +173,8 @@ public class LoaderTask {
         return bitmap;
     }
 
-    public static Observable<AnimationDrawable> gifTask(Request request){
+    public static Observable<Bitmap> gifTask(Request request){
+        GifDecoder decoder = new GifDecoder();
         return null;
     }
 }

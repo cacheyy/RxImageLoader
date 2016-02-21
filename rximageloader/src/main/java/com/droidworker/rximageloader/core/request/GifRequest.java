@@ -1,6 +1,6 @@
 package com.droidworker.rximageloader.core.request;
 
-import android.graphics.drawable.AnimationDrawable;
+import android.graphics.Bitmap;
 import android.view.View;
 
 import rx.Observable;
@@ -8,7 +8,7 @@ import rx.Observable;
 /**
  * @author DroidWorkerLYF
  */
-public class GifRequest extends Request<AnimationDrawable> {
+public class GifRequest extends Request {
 
     @Override
     public void into(View view) {
@@ -16,12 +16,12 @@ public class GifRequest extends Request<AnimationDrawable> {
     }
 
     @Override
-    public Observable<AnimationDrawable> observable(View view) {
+    public Observable<Bitmap> observable(View view) {
         return null;
     }
 
     @Override
-    public void onNext(AnimationDrawable animationDrawable) {
+    public void onNext(Bitmap bitmap) {
 
     }
 }

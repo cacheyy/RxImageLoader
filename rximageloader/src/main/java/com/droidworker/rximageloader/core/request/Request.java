@@ -22,7 +22,7 @@ import rx.functions.Func1;
  *
  * @author DroidWorkerLYF
  */
-public abstract class Request<T> extends Subscriber<T> {
+public abstract class Request extends Subscriber<Bitmap> {
     private static final String TAG = Request.class.getSimpleName();
     /**
      * The path of resource
@@ -76,7 +76,7 @@ public abstract class Request<T> extends Subscriber<T> {
      */
     protected Action1<Request> internalSubscriber;
     protected boolean resized;
-    protected Func1<T, T> mTransformer = oldResult -> oldResult;
+    protected Func1<Bitmap, Bitmap> mTransformer = bitmap -> bitmap;
     protected Transition mTransition;
 
     public Request() {
@@ -210,7 +210,7 @@ public abstract class Request<T> extends Subscriber<T> {
         return this;
     }
 
-    public Request transform(Func1<T, T> transformer) {
+    public Request transform(Func1<Bitmap, Bitmap> transformer) {
         this.mTransformer = transformer;
         return this;
     }
@@ -235,7 +235,7 @@ public abstract class Request<T> extends Subscriber<T> {
      * @param view the container
      * @return An Observable of load task
      */
-    public abstract Observable<T> observable(View view);
+    public abstract Observable<Bitmap> observable(View view);
 
     /**
      * Prepare reference of the view
@@ -350,7 +350,7 @@ public abstract class Request<T> extends Subscriber<T> {
         return mCompressQuality;
     }
 
-    public Func1<T, T> getTransformer() {
+    public Func1<Bitmap, Bitmap> getTransformer() {
         return mTransformer;
     }
 

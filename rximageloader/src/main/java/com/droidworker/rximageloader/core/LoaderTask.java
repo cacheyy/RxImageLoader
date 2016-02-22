@@ -4,17 +4,15 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
 
-import com.droidworker.rximageloader.core.gif.GifDecoder;
+import com.droidworker.rximageloader.core.gif.GifProcessor;
 import com.droidworker.rximageloader.core.request.Request;
 import com.droidworker.rximageloader.utils.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -79,14 +77,11 @@ public class LoaderTask {
             Bitmap bitmap = null;
             if (Utils.isUrl(request.getPath())) {
                 bitmap = downloadUrlToStream(request, LoaderCore.getGlobalConfig());
-            } else //noinspection StatementWithEmptyBody
-                if (Utils.isGif(request.getPath())) {
-
-                } else {
-                    //This is a local file
-                    bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
-                            .getReqWidth(), request.getReqHeight(), request.getConfig());
-                }
+            } else {
+                //This is a local file
+                bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
+                        .getReqWidth(), request.getReqHeight(), request.getConfig());
+            }
             if (bitmap != null) {
                 LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
                 if (LoaderCore.getDiskCacheStrategy().cacheRealSize()) {
@@ -180,29 +175,17 @@ public class LoaderTask {
         return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
-                if (subscriber.isUnsubscribed()) {
-                    return;
-                }
-                File file = new File(request.getPath());
-                if (!file.exists()) {
-                    subscriber.onError(new Throwable("File not exist"));
-                }
-                try {
-                    GifDecoder decoder = new GifDecoder();
-                    InputStream inputStream = new FileInputStream(file);
-                    decoder.read(inputStream, inputStream.available());
-                    decoder.advance();
-                    for (int i = 0; i < decoder.getFrameCount(); i++) {
-                        if (!subscriber.isUnsubscribed()) {
-                            subscriber.onNext(decoder.getNextFrame());
-                            Thread.sleep(decoder.getDelay(i));
-                        }
+                GifProcessor gifProcessor = new GifProcessor(request.getPath());
+                gifProcessor.read();
+                while(!subscriber.isUnsubscribed()){
+                    subscriber.onNext(gifProcessor.getFrame());
+                    try {
+                        Thread.sleep(gifProcessor.getDelay());
+                    } catch (InterruptedException e) {
+
                     }
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                    subscriber.onError(new Throwable("gif task error"));
                 }
             }
-        }).repeat();
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
 }

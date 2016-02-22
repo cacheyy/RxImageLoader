@@ -1,6 +1,7 @@
 package com.droidworker.rximageloader.core.request;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -226,7 +227,10 @@ public abstract class Request extends Subscriber<Bitmap> {
      *
      * @param view the container
      */
-    public abstract void into(View view);
+    public void into(View view) {
+        prepareView(view);
+        Observable.just(this).subscribe(internalSubscriber);
+    }
 
     /**
      * Set the view will be used to set the bitmap and create a new load task, you should
@@ -398,6 +402,7 @@ public abstract class Request extends Subscriber<Bitmap> {
         if (isUnsubscribed() || checkNull() || errorId == 0) {
             return;
         }
+        Log.e(TAG, e.getMessage());
         View view = mReference.get();
         if (view instanceof ImageView) {
             ((ImageView) view).setImageResource(errorId);

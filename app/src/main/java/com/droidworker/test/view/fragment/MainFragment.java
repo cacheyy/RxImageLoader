@@ -61,13 +61,12 @@ public class MainFragment extends Fragment {
             public void call(List<ImageBean> imageBeans) {
                 mList.clear();
                 mList.addAll(imageBeans);
+//                ImageBean bean = new ImageBean();
+//                bean.path = Environment.getExternalStorageDirectory() + "/testgif.gif";
+//                mList.add(bean);
+//                mList.add(0, bean);
                 mAdapter.notifyDataSetChanged();
             }
         });
-
-//        ImageBean bean = new ImageBean();
-//        bean.path = "http://img4q.duitang.com/uploads/item/201303/08/20130308121537_tQBXj.jpeg";
-//        mList.add(bean);
-//        mAdapter.notifyDataSetChanged();
     }
 }

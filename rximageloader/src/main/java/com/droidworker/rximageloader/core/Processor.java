@@ -189,7 +189,7 @@ public class Processor {
      * @param filename filename of the bitmap
      * @return decoded bitmap
      */
-    static Bitmap decodeSampledBitmapFromFile(String filename, int
+    public static Bitmap decodeSampledBitmapFromFile(String filename, int
             reqWidth, int reqHeight, Bitmap.Config config) {
 
         final BitmapFactory.Options options = new BitmapFactory.Options();

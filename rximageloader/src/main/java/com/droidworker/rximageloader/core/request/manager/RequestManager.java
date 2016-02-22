@@ -1,6 +1,7 @@
 package com.droidworker.rximageloader.core.request.manager;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 
@@ -44,14 +45,15 @@ public class RequestManager {
         }
     }
 
-    public BitmapRequest loadBitmap(String path){
+    public BitmapRequest loadBitmap(String path) {
         BitmapRequest request = new BitmapRequest();
         request.setNotifySubscriber(request1 -> into(request1));
         return request;
     }
 
-    public GifRequest loadGif(String path){
+    public GifRequest loadGif(String path) {
         GifRequest request = new GifRequest();
+        Log.e("lyf", "load gif ");
         request.setNotifySubscriber(request1 -> into(request1));
         return request;
     }
@@ -74,9 +76,9 @@ public class RequestManager {
         }
         requestMap.put(view, request);
         if (!flying) {
-            if(request instanceof BitmapRequest){
+            if (request instanceof BitmapRequest) {
                 LoaderTask.bitmapTask(request).subscribe(request);
-            } else if(request instanceof GifRequest){
+            } else if (request instanceof GifRequest) {
                 LoaderTask.gifTask(request).subscribe(request);
             }
         }
@@ -172,7 +174,11 @@ public class RequestManager {
         for (Map.Entry<View, Request> viewRequestEntry : requestMap.entrySet()) {
             Request request = viewRequestEntry.getValue();
             if (!request.isUnsubscribed()) {
-                LoaderTask.bitmapTask(request).subscribe(request);
+                if (request instanceof BitmapRequest) {
+                    LoaderTask.bitmapTask(request).subscribe(request);
+                } else if (request instanceof GifRequest) {
+                    LoaderTask.gifTask(request).subscribe(request);
+                }
             }
         }
     }

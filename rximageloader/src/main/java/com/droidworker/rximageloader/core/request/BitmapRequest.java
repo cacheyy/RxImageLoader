@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.droidworker.rximageloader.core.LoaderTask;
-import com.droidworker.rximageloader.core.request.manager.RequestManager;
 import com.droidworker.rximageloader.utils.Utils;
 
 import rx.Observable;
@@ -17,17 +16,6 @@ import rx.Observable;
  * @author DroidWorkerLYF
  */
 public class BitmapRequest extends Request {
-
-    /**
-     * Set the view will be used to set the bitmap and notify {@link RequestManager} to trigger
-     * this request
-     *
-     * @param view the container
-     */
-    public void into(View view) {
-        prepareView(view);
-        Observable.just(this).subscribe(internalSubscriber);
-    }
 
     @Override
     public Observable<Bitmap> observable(View view) {

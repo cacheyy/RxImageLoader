@@ -61,10 +61,6 @@ public class MainFragment extends Fragment {
             public void call(List<ImageBean> imageBeans) {
                 mList.clear();
                 mList.addAll(imageBeans);
-//                ImageBean bean = new ImageBean();
-//                bean.path = Environment.getExternalStorageDirectory() + "/testgif.gif";
-//                mList.add(bean);
-//                mList.add(0, bean);
                 mAdapter.notifyDataSetChanged();
             }
         });

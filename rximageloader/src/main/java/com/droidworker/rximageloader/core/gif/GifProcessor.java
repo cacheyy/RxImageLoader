@@ -10,8 +10,10 @@ import com.droidworker.rximageloader.utils.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @author DroidWorkerLYF
@@ -39,7 +41,8 @@ public class GifProcessor {
 
     public void read() {
         prepareDecoder();
-        mGifFile.prepare();
+//        mGifFile.prepare();
+        prepareCache();
     }
 
     private void prepareDecoder() {
@@ -57,6 +60,35 @@ public class GifProcessor {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    private void prepareCache(){
+        mGifFile.prepare();
+        if(!mGifFile.exists()){
+            for(int i =0;i<mDecoder.getFrameCount();i++){
+                mDecoder.advance();
+                Bitmap bitmap = mDecoder.getNextFrame();
+                final int frame = getCurrentFrame();
+                File file = new File(cachePath + File.separator + "frame_" + frame + "_" + mDecoder.getDelay(frame));
+                OutputStream outputStream = null;
+                try {
+                    outputStream = new FileOutputStream(file);
+                    bitmap.compress(Bitmap.CompressFormat.WEBP, 100, outputStream);
+                    outputStream.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (outputStream != null) {
+                        try {
+                            outputStream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
         }
     }
 

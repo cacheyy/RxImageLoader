@@ -76,7 +76,7 @@ public class GifFile implements IGifFile {
 
     @Override
     public String getFramePath(int frame) {
-        if(bitmapArray == null || bitmapArray != null && bitmapArray.indexOfKey(frame) < 0){
+        if(bitmapArray == null || bitmapArray.indexOfKey(frame) < 0){
             return null;
         }
         return bitmapArray.get(frame).path;
@@ -84,7 +84,7 @@ public class GifFile implements IGifFile {
 
     @Override
     public int getFrameDelay(int frame) {
-        if(bitmapArray == null || bitmapArray != null && bitmapArray.indexOfKey(frame) < 0){
+        if(bitmapArray == null || bitmapArray.indexOfKey(frame) < 0){
             return -1;
         }
         return bitmapArray.get(frame).delay;

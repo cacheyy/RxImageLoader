@@ -37,7 +37,6 @@ public class LoaderTask {
      * @return a new task
      */
     public static Observable<Bitmap> bitmapTask(Request request) {
-        //noinspection unchecked
         return Observable.concat(memTask(request), diskTask(request),
                 downloadToBitmapTask(request), localBitmapTask(request))
                 .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
@@ -77,7 +76,7 @@ public class LoaderTask {
         }
         return downloadToFile(request).map(file -> {
             Bitmap bitmap = Processor.decodeSampledBitmapFromFile(file.getAbsolutePath(),
-                request.getReqWidth(), request.getReqHeight(), request.getConfig());
+                    request.getReqWidth(), request.getReqHeight(), request.getConfig());
             if (bitmap != null) {
                 LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
                 if (LoaderCore.getDiskCacheStrategy().cacheRealSize()) {
@@ -182,8 +181,7 @@ public class LoaderTask {
     }
 
     public static Observable<Bitmap> gifTask(Request request) {
-        
-        return null;
+        return Observable.concat(localGifTask(request), netGifTask(request));
     }
 
     public static Observable<Bitmap> localGifTask(Request request){
@@ -191,21 +189,10 @@ public class LoaderTask {
                 new Observable.OnSubscribe<Bitmap>() {
                     @Override
                     public void call(Subscriber<? super Bitmap> subscriber) {
-                        GifProcessor gifProcessor = new GifProcessor(request.getRawKey());
-                        InputStream inputStream = null;
-                        try {
-                            File file = new File(request.getPath());
-                            if (file.exists()) {
-                                inputStream = new FileInputStream(file);
-                            } else if (request.getPath().contains("android_asset")) {
-                                inputStream = request.getAttachedView().getContext().getAssets()
-                                        .open(request.getRawKey());
-                            }
-                            gifProcessor.read(inputStream);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                        if(subscriber.isUnsubscribed()){
+                            return;
                         }
-
+                        GifProcessor gifProcessor = getGifProcessor(request);
                         while (!subscriber.isUnsubscribed()) {
                             subscriber.onNext(gifProcessor.getFrame());
                             try {
@@ -219,7 +206,30 @@ public class LoaderTask {
         ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
 
-    public static Observable<File> netGifTask(Request request){
-        return Observable.empty();
+    public static Observable<Bitmap> netGifTask(Request request){
+        return downloadToFile(request).compose(fileObservable -> {
+            String targetPath = LoaderCore.getGlobalConfig().tempFilePath + File.separator + Utils
+                    .hashKeyForDisk(request.getRawKey());
+            request.load(targetPath);
+            return localGifTask(request);
+        });
+    }
+
+    private static GifProcessor getGifProcessor(Request request){
+        GifProcessor gifProcessor = new GifProcessor(request.getRawKey());
+        InputStream inputStream = null;
+        try {
+            File file = new File(request.getPath());
+            if (file.exists()) {
+                inputStream = new FileInputStream(file);
+            } else if (request.getPath().contains("android_asset")) {
+                inputStream = request.getAttachedView().getContext().getAssets()
+                        .open(request.getRawKey());
+            }
+            gifProcessor.read(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return gifProcessor;
     }
 }

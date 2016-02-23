@@ -1,8 +1,6 @@
 package com.droidworker.rximageloader.core;
 
 import android.graphics.Bitmap;
-import android.util.Log;
-import android.view.View;
 
 import com.droidworker.rximageloader.core.gif.GifProcessor;
 import com.droidworker.rximageloader.core.request.Request;
@@ -11,8 +9,10 @@ import com.droidworker.rximageloader.utils.Utils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -38,7 +38,8 @@ public class LoaderTask {
      */
     public static Observable<Bitmap> bitmapTask(Request request) {
         //noinspection unchecked
-        return Observable.concat(memTask(request), diskTask(request), getBitmap(request))
+        return Observable.concat(memTask(request), diskTask(request),
+                downloadToBitmapTask(request), localBitmapTask(request))
                 .takeFirst(bitmap -> bitmap != null && !bitmap.isRecycled())
                 .map(request.getTransformer())
                 .subscribeOn(Schedulers.io())
@@ -58,40 +59,9 @@ public class LoaderTask {
      * @return a task that get resource from disk cache
      */
     public static Observable<Bitmap> diskTask(Request request) {
-        Log.i(TAG, "diskTask " + request.getKey());
         return LoaderCore.getCacheManager().getFormDisk(request)
                 .doOnNext(bitmap -> LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap)
                 );
-    }
-
-    /**
-     * @param request {@link Request}
-     * @return a task that get resource from the original place
-     */
-    public static Observable<Bitmap> getBitmap(Request request) {
-        return Observable.create(subscriber -> {
-            Log.i(TAG, "get from origin " + request.getKey());
-            if (subscriber.isUnsubscribed()) {
-                return;
-            }
-            Bitmap bitmap = null;
-            if (Utils.isUrl(request.getPath())) {
-                bitmap = downloadUrlToStream(request, LoaderCore.getGlobalConfig());
-            } else {
-                //This is a local file
-                bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
-                        .getReqWidth(), request.getReqHeight(), request.getConfig());
-            }
-            if (bitmap != null) {
-                LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
-                if (LoaderCore.getDiskCacheStrategy().cacheRealSize()) {
-                    LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
-                }
-                View view = request.getAttachedView();
-                subscriber.onNext(bitmap);
-            }
-            subscriber.onCompleted();
-        });
     }
 
     /**
@@ -101,91 +71,155 @@ public class LoaderTask {
      * @param request {@link Request}
      * @return decoded bitmap
      */
-    public static Bitmap downloadUrlToStream(Request request,
-                                             LoaderConfig loaderConfig) {
-        HttpURLConnection urlConnection = null;
-        File tempOut;
-        BufferedOutputStream out = null;
-        BufferedInputStream in = null;
-        Bitmap bitmap = null;
-
-        try {
-            final URL url = new URL(request.getPath());
-            urlConnection = (HttpURLConnection) url.openConnection();
-            in = new BufferedInputStream(urlConnection.getInputStream(), IO_BUFFER_SIZE);
-
-            tempOut = new File(loaderConfig.tempFilePath + File.separator + Utils.hashKeyForDisk(request
-                    .getRawKey()));
-            if (!tempOut.exists()) {
-                if (!tempOut.getParentFile().exists()) {
-                    if (!tempOut.getParentFile().mkdirs()) {
-                        return null;
-                    }
+    public static Observable<Bitmap> downloadToBitmapTask(Request request) {
+        if (!Utils.isUrl(request.getPath())) {
+            return Observable.empty();
+        }
+        return downloadToFile(request).map(file -> {
+            Bitmap bitmap = Processor.decodeSampledBitmapFromFile(file.getAbsolutePath(),
+                request.getReqWidth(), request.getReqHeight(), request.getConfig());
+            if (bitmap != null) {
+                LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
+                if (LoaderCore.getDiskCacheStrategy().cacheRealSize()) {
+                    LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
                 }
-                if (tempOut.createNewFile()) {
-                    out = new BufferedOutputStream(new FileOutputStream(tempOut), IO_BUFFER_SIZE);
+            }
+            return bitmap;
+        });
+    }
 
-                    final int total = urlConnection.getContentLength();
-                    int len;
-                    int current = 0;
-                    byte[] buffer = new byte[IO_BUFFER_SIZE];
-                    while ((len = in.read(buffer)) != -1) {
-                        out.write(buffer, 0, len);
-                        current += len;
-                        if (total >= 0) {
-                            request.onProgress(current * 1.0f / total);
+    public static Observable<File> downloadToFile(Request request){
+        return Observable.create(subscriber -> {
+            if (subscriber.isUnsubscribed()) {
+                return;
+            }
+            String url = request.getPath();
+            String targetPath = LoaderCore.getGlobalConfig().tempFilePath + File.separator + Utils
+                    .hashKeyForDisk(request.getRawKey());
+            HttpURLConnection urlConnection = null;
+            File tempOut;
+            BufferedOutputStream out = null;
+            BufferedInputStream in = null;
+
+            try {
+                urlConnection = (HttpURLConnection) new URL(url).openConnection();
+                in = new BufferedInputStream(urlConnection.getInputStream(), IO_BUFFER_SIZE);
+
+                tempOut = new File(targetPath);
+                if (!tempOut.exists()) {
+                    if (!tempOut.getParentFile().exists()) {
+                        if (!tempOut.getParentFile().mkdirs()) {
+                            return;
                         }
                     }
-                    out.flush();
-                }
-            }
+                    if (tempOut.createNewFile()) {
+                        out = new BufferedOutputStream(new FileOutputStream(tempOut), IO_BUFFER_SIZE);
 
-            if (tempOut.exists()) {
-                bitmap = Processor.decodeSampledBitmapFromFile(tempOut.getAbsolutePath(), request
-                        .getReqWidth(), request.getReqHeight(), request.getConfig());
-                if (LoaderCore.getDiskCacheStrategy().cacheOrigin()) {
-                    //noinspection ResultOfMethodCallIgnored
-                    tempOut.renameTo(
-                            new File(loaderConfig.diskCachePath + File.separator
-                                    + Utils.hashKeyForDisk(request.getRawKey())));
+                        final int total = urlConnection.getContentLength();
+                        int len;
+                        int current = 0;
+                        byte[] buffer = new byte[IO_BUFFER_SIZE];
+                        while ((len = in.read(buffer)) != -1 && !subscriber.isUnsubscribed()) {
+                            out.write(buffer, 0, len);
+                            current += len;
+                            if (total >= 0) {
+                                request.onProgress(current * 1.0f / total);
+                            }
+                        }
+                        out.flush();
+                    }
                 }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (in != null) {
-                    in.close();
+                if (tempOut.exists()) {
+                    if (LoaderCore.getDiskCacheStrategy().cacheOrigin()) {
+                        //noinspection ResultOfMethodCallIgnored
+                        tempOut.renameTo(
+                                new File(LoaderCore.getGlobalConfig().diskCachePath + File.separator
+                                        + Utils.hashKeyForDisk(request.getRawKey())));
+                        if (subscriber.isUnsubscribed()) {
+                            return;
+                        }
+                        subscriber.onNext(tempOut);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                subscriber.onError(e);
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                    if (in != null) {
+                        in.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
-
-        return bitmap;
+        });
     }
 
-    public static Observable<Bitmap> gifTask(Request request) {
+    public static Observable<Bitmap> localBitmapTask(Request request){
         return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
-                GifProcessor gifProcessor = new GifProcessor(request.getPath());
-                gifProcessor.read();
-                while(!subscriber.isUnsubscribed()){
-                    subscriber.onNext(gifProcessor.getFrame());
-                    try {
-                        Thread.sleep(gifProcessor.getDelay());
-                    } catch (InterruptedException e) {
-
+                if(!subscriber.isUnsubscribed()){
+                    Bitmap bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
+                            .getReqWidth(), request.getReqHeight(), request.getConfig());
+                    if(bitmap != null){
+                        LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
+                        if (LoaderCore.getDiskCacheStrategy().cacheRealSize()) {
+                            LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
+                        }
+                        subscriber.onNext(bitmap);
                     }
                 }
             }
-        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+        });
+    }
+
+    public static Observable<Bitmap> gifTask(Request request) {
+        
+        return null;
+    }
+
+    public static Observable<Bitmap> localGifTask(Request request){
+        return Observable.create(
+                new Observable.OnSubscribe<Bitmap>() {
+                    @Override
+                    public void call(Subscriber<? super Bitmap> subscriber) {
+                        GifProcessor gifProcessor = new GifProcessor(request.getRawKey());
+                        InputStream inputStream = null;
+                        try {
+                            File file = new File(request.getPath());
+                            if (file.exists()) {
+                                inputStream = new FileInputStream(file);
+                            } else if (request.getPath().contains("android_asset")) {
+                                inputStream = request.getAttachedView().getContext().getAssets()
+                                        .open(request.getRawKey());
+                            }
+                            gifProcessor.read(inputStream);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        while (!subscriber.isUnsubscribed()) {
+                            subscriber.onNext(gifProcessor.getFrame());
+                            try {
+                                Thread.sleep(gifProcessor.getDelay());
+                            } catch (InterruptedException e) {
+
+                            }
+                        }
+                    }
+                }
+        ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+    }
+
+    public static Observable<File> netGifTask(Request request){
+        return Observable.empty();
     }
 }

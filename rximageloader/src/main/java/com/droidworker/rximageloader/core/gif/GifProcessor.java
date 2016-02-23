@@ -9,7 +9,6 @@ import com.droidworker.rximageloader.core.Processor;
 import com.droidworker.rximageloader.utils.Utils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,19 +18,16 @@ import java.io.OutputStream;
  * @author DroidWorkerLYF
  */
 public class GifProcessor {
-    private String originPath;
     private GifDecoder mDecoder;
     private String cachePath;
     private GifFile mGifFile;
     private int curFrame = -1;
 
-    public GifProcessor(String path) {
-        this.originPath = path;
+    public GifProcessor(String gifName) {
         mDecoder = new GifDecoder();
 
-        String mGifName = path.substring(path.lastIndexOf("/") + 1, path.length());
         File file = new File(LoaderCore.getGlobalConfig().diskCachePath);
-        cachePath = file.getParent() + File.separator + "Gif" + File.separator + Utils.hashKeyForDisk(mGifName);
+        cachePath = file.getParent() + File.separator + "Gif" + File.separator + Utils.hashKeyForDisk(gifName);
         mGifFile = new GifFile(cachePath);
 
         if (!mGifFile.exists()) {
@@ -39,26 +35,25 @@ public class GifProcessor {
         }
     }
 
-    public void read() {
-        prepareDecoder();
+    public void read(InputStream inputStream) {
+        prepareDecoder(inputStream);
 //        mGifFile.prepare();
         prepareCache();
     }
 
-    private void prepareDecoder() {
-        InputStream inputStream = null;
+    private void prepareDecoder(InputStream inputStream) {
+        if(inputStream == null){
+            return ;
+        }
         try {
-            inputStream = new FileInputStream(originPath);
             mDecoder.read(inputStream, inputStream.available());
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

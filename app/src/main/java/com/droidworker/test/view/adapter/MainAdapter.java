@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.droidworker.rximageloader.core.ImageLoader;
+import com.droidworker.rximageloader.core.transformation.RoundCornerTransform;
+import com.droidworker.rximageloader.core.transition.CrossFade;
 import com.droidworker.test.R;
 import com.droidworker.test.model.bean.ImageBean;
 
@@ -40,9 +42,9 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ImageBean bean = mList.get(position);
         final ImageView view = ((ItemViewHolder) holder).mImageView;
         ImageLoader.with(holder.itemView.getContext()).load(bean.path)
-//                .scaleType(ImageView.ScaleType.FIT_XY)
-//                .transform(new RoundCornerTransform(30, 30))
-//                .transition(new CrossFade(view))
+                .scaleType(ImageView.ScaleType.FIT_XY)
+                .transform(new RoundCornerTransform(30, 30))
+                .transition(new CrossFade(view))
                 .error(R.drawable.error)
                 .placeholder(R.drawable.loading)
                 .progress(new Action1<Float>() {

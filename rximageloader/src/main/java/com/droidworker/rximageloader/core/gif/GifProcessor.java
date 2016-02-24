@@ -2,6 +2,7 @@ package com.droidworker.rximageloader.core.gif;
 
 import android.graphics.Bitmap;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.droidworker.rximageloader.cache.gif.GifFile;
 import com.droidworker.rximageloader.core.LoaderCore;
@@ -18,10 +19,12 @@ import java.io.OutputStream;
  * @author DroidWorkerLYF
  */
 public class GifProcessor {
+    private static final String TAG = GifProcessor.class.getSimpleName();
     private GifDecoder mDecoder;
     private String cachePath;
     private GifFile mGifFile;
     private int curFrame = -1;
+    private int reqWidth, reqHeight;
 
     public GifProcessor(String gifName) {
         mDecoder = new GifDecoder();
@@ -61,6 +64,7 @@ public class GifProcessor {
     private void prepareCache(){
         mGifFile.prepare();
         if(!mGifFile.exists()){
+            Log.e(TAG, "prepare cache");
             for(int i =0;i<mDecoder.getFrameCount();i++){
                 mDecoder.advance();
                 Bitmap bitmap = mDecoder.getNextFrame();
@@ -83,6 +87,7 @@ public class GifProcessor {
                     }
                 }
             }
+            Log.e(TAG, "cache prepared");
         }
     }
 
@@ -118,7 +123,8 @@ public class GifProcessor {
         String path = mGifFile.getFramePath(frame);
         mDecoder.advance();
         if (!TextUtils.isEmpty(path)) {
-            return Processor.decodeSampledBitmapFromFile(path, 0, 0, Bitmap.Config.ARGB_8888);
+            return Processor.decodeSampledBitmapFromFile(path, reqWidth, reqHeight, Bitmap.Config
+                    .ARGB_8888);
         }
         return getNextFrame();
     }
@@ -143,5 +149,10 @@ public class GifProcessor {
 //            }
 //        }
         return bitmap;
+    }
+
+    public void setRequiredSize(int width, int height){
+        reqWidth = width;
+        reqHeight = height;
     }
 }

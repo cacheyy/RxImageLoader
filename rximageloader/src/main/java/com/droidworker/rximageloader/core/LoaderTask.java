@@ -185,12 +185,16 @@ public class LoaderTask {
     }
 
     public static Observable<Bitmap> gifTask(Request request) {
-        return Observable.concat(localGifTask(request), netGifTask(request))
+        Observable<Bitmap> observable;
+        if (Utils.isUrl(request.getPath())) {
+            observable = netGifTask(request);
+        } else {
+            observable = localGifTask(request);
+        }
+
+        return observable
                 .filter(bitmap -> bitmap != null && !bitmap.isRecycled())
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
-//        return netGifTask(request)
-//                .filter(bitmap -> bitmap != null && !bitmap.isRecycled())
-//                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
 
     public static Observable<Bitmap> localGifTask(Request request){
@@ -198,7 +202,7 @@ public class LoaderTask {
                 new Observable.OnSubscribe<Bitmap>() {
                     @Override
                     public void call(Subscriber<? super Bitmap> subscriber) {
-                        if (subscriber.isUnsubscribed() || Utils.isUrl(request.getPath())) {
+                        if (subscriber.isUnsubscribed()) {
                             return;
                         }
                         GifProcessor gifProcessor = getGifProcessor(request);
@@ -256,6 +260,7 @@ public class LoaderTask {
 
     private static GifProcessor getGifProcessor(Request request){
         GifProcessor gifProcessor = new GifProcessor(request.getRawKey());
+        gifProcessor.setRequiredSize(request.getReqWidth(), request.getReqHeight());
         InputStream inputStream = null;
         try {
             File file = new File(request.getPath());

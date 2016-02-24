@@ -83,7 +83,7 @@ public abstract class Request extends Subscriber<Bitmap> {
     public Request() {
         LoaderConfig loaderConfig = LoaderCore.getGlobalConfig();
         mConfig = loaderConfig.mConfig;
-        reqWidth = reqHeight = loaderConfig.screenWidth / 4;
+//        reqWidth = reqHeight = loaderConfig.screenWidth / 4;
     }
 
     /**
@@ -304,6 +304,7 @@ public abstract class Request extends Subscriber<Bitmap> {
      */
     public int getReqWidth() {
         if (resized) {
+            Log.e(TAG, "resized " + resized + " " + reqWidth);
             return reqWidth;
         }
         if (!checkNull()) {
@@ -313,6 +314,7 @@ public abstract class Request extends Subscriber<Bitmap> {
                 reqWidth = view.getMeasuredWidth();
             }
         }
+        Log.e(TAG, "resized " + resized + " " + reqWidth);
         return reqWidth;
     }
 
@@ -356,6 +358,10 @@ public abstract class Request extends Subscriber<Bitmap> {
 
     public Func1<Bitmap, Bitmap> getTransformer() {
         return mTransformer;
+    }
+
+    public boolean isResized(){
+        return resized;
     }
 
     /**

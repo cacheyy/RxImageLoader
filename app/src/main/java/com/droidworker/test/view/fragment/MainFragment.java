@@ -1,6 +1,7 @@
 package com.droidworker.test.view.fragment;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -61,8 +62,15 @@ public class MainFragment extends Fragment {
             public void call(List<ImageBean> imageBeans) {
                 mList.clear();
                 mList.addAll(imageBeans);
+                mList.add(0, getGif());
                 mAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    private ImageBean getGif(){
+        ImageBean bean = new ImageBean();
+        bean.path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/f048.gif";
+        return bean;
     }
 }

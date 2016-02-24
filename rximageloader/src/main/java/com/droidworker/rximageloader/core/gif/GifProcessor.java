@@ -83,7 +83,6 @@ public class GifProcessor {
                     }
                 }
             }
-
         }
     }
 
@@ -92,7 +91,7 @@ public class GifProcessor {
     }
 
     public int getDelay() {
-        return getDelay(getCurrentFrame());
+        return getDelay(curFrame);
     }
 
     public int getDelay(int frame) {

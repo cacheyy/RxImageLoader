@@ -1,6 +1,7 @@
 package com.droidworker.rximageloader.core;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.droidworker.rximageloader.core.gif.GifProcessor;
 import com.droidworker.rximageloader.core.request.Request;
@@ -165,10 +166,10 @@ public class LoaderTask {
         return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
             public void call(Subscriber<? super Bitmap> subscriber) {
-                if(!subscriber.isUnsubscribed()){
+                if (!subscriber.isUnsubscribed()) {
                     Bitmap bitmap = Processor.decodeSampledBitmapFromFile(request.getPath(), request
                             .getReqWidth(), request.getReqHeight(), request.getConfig());
-                    if(bitmap != null){
+                    if (bitmap != null) {
                         LoaderCore.getCacheManager().putInMem(request.getKey(), bitmap);
                         if (LoaderCore.getDiskCacheStrategy().cacheRealSize()) {
                             LoaderCore.getCacheManager().putInDisk(request.getKey(), bitmap);
@@ -181,7 +182,8 @@ public class LoaderTask {
     }
 
     public static Observable<Bitmap> gifTask(Request request) {
-        return Observable.concat(localGifTask(request), netGifTask(request));
+        return Observable.concat(localGifTask(request), netGifTask(request))
+                .filter(bitmap -> bitmap != null && !bitmap.isRecycled());
     }
 
     public static Observable<Bitmap> localGifTask(Request request){
@@ -192,6 +194,7 @@ public class LoaderTask {
                         if(subscriber.isUnsubscribed()){
                             return;
                         }
+                        Log.e(TAG, "local gif");
                         GifProcessor gifProcessor = getGifProcessor(request);
                         while (!subscriber.isUnsubscribed()) {
                             subscriber.onNext(gifProcessor.getFrame());
@@ -208,6 +211,10 @@ public class LoaderTask {
 
     public static Observable<Bitmap> netGifTask(Request request){
         return downloadToFile(request).compose(fileObservable -> {
+            if(!Utils.isUrl(request.getPath())){
+                return Observable.empty();
+            }
+            Log.e(TAG, "net gif");
             String targetPath = LoaderCore.getGlobalConfig().tempFilePath + File.separator + Utils
                     .hashKeyForDisk(request.getRawKey());
             request.load(targetPath);

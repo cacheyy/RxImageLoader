@@ -1,7 +1,6 @@
 package com.droidworker.rximageloader.core.request.manager;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 
@@ -53,7 +52,6 @@ public class RequestManager {
 
     public GifRequest loadGif(String path) {
         GifRequest request = new GifRequest();
-        Log.e("lyf", "load gif ");
         request.setNotifySubscriber(request1 -> into(request1));
         return request;
     }

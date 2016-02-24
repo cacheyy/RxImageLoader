@@ -17,4 +17,12 @@ public class ImageBean {
      * the folder of image
      */
     public String folder = "";
+
+    public ImageBean(){
+
+    }
+
+    public ImageBean(String path){
+        this.path = path;
+    }
 }

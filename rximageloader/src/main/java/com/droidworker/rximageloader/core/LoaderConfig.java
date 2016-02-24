@@ -4,7 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Environment;
 import android.util.DisplayMetrics;
-import android.util.Log;
+
+import com.droidworker.rximageloader.core.strategy.DiskCacheAllStrategy;
+import com.droidworker.rximageloader.core.strategy.DiskCacheStrategy;
 
 import java.io.File;
 
@@ -14,11 +16,11 @@ import java.io.File;
  * @author DroidWorkerLYF
  */
 public class LoaderConfig {
-    private static final String TAG = "LoaderConfig";
+    private static final String TAG = LoaderConfig.class.getSimpleName();
     private static final int DEFAULT_DISK_CACHE_SIZE = 1024 * 1024 * 20;//KB
     private static final Bitmap.CompressFormat DEFAULT_COMPRESS_FORMAT = Bitmap.CompressFormat.WEBP;
     private static final int DEFAULT_COMPRESS_QUALITY = 100;
-    private static final Bitmap.Config DEFAULT_BITMAP_CONFIG = Bitmap.Config.ARGB_4444;
+    private static final Bitmap.Config DEFAULT_BITMAP_CONFIG = Bitmap.Config.ARGB_8888;
     private static final float DEFAULT_MEM_CACHE_PERCENT = 0.125f;
     /** the size of memory cache */
     public final int memCacheSize;
@@ -42,19 +44,18 @@ public class LoaderConfig {
     public final int screenWidth, screenHeight;
     /** the storage path of temporary files */
     public final String tempFilePath;
-    public final boolean isDebug;
+    public final DiskCacheStrategy mDiskCacheStrategy;
 
     private LoaderConfig(final Builder builder, Context context) {
-        this.memCacheSizePercent = builder.memCacheSizePercent != 0.0f ? builder.memCacheSizePercent : DEFAULT_MEM_CACHE_PERCENT;
-        this.memCacheSize = builder.memCacheSize != 0 ? builder.memCacheSize : Math.round(memCacheSizePercent
+        this.memCacheSizePercent = builder.memCacheSizePercent;
+        this.memCacheSize = Math.round(memCacheSizePercent
                 * Runtime.getRuntime().maxMemory() / 1024);
-        Log.i(TAG, memCacheSize + "");
-        this.diskCacheSize = builder.diskCacheSize != 0 ? builder.diskCacheSize : DEFAULT_DISK_CACHE_SIZE;
-        this.mCompressFormat = builder.mCompressFormat != null ? builder.mCompressFormat : DEFAULT_COMPRESS_FORMAT;
-        this.mCompressQuality = builder.mCompressQuality != 0 ? builder.mCompressQuality : DEFAULT_COMPRESS_QUALITY;
+        this.diskCacheSize = builder.diskCacheSize;
+        this.mCompressFormat = builder.mCompressFormat;
+        this.mCompressQuality = builder.mCompressQuality;
         this.memCacheEnabled = builder.memCacheEnabled;
         this.diskCacheEnabled = builder.diskCacheEnabled;
-        this.mConfig = builder.mConfig != null ? builder.mConfig : DEFAULT_BITMAP_CONFIG;
+        this.mConfig = builder.mConfig;
 
         final String cachePath = Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
                 || !isExternalStorageRemovable() ? getExternalCacheDir(context).getPath() : context
@@ -65,7 +66,7 @@ public class LoaderConfig {
         DisplayMetrics dm = context.getResources().getDisplayMetrics();
         screenWidth = dm.widthPixels;
         screenHeight = dm.heightPixels;
-        isDebug = builder.isDebug;
+        mDiskCacheStrategy = builder.mDiskCacheStrategy;
     }
 
     /**
@@ -79,30 +80,18 @@ public class LoaderConfig {
     }
 
     public static class Builder {
-        private int memCacheSize;
-        private int diskCacheSize;
-        private Bitmap.CompressFormat mCompressFormat;
-        private int mCompressQuality;
+        private int diskCacheSize = DEFAULT_DISK_CACHE_SIZE;
+        private Bitmap.CompressFormat mCompressFormat = DEFAULT_COMPRESS_FORMAT;
+        private int mCompressQuality = DEFAULT_COMPRESS_QUALITY;
         private boolean memCacheEnabled = true;
         private boolean diskCacheEnabled = true;
-        private float memCacheSizePercent;
-        private Bitmap.Config mConfig;
+        private float memCacheSizePercent = DEFAULT_MEM_CACHE_PERCENT;
+        private Bitmap.Config mConfig = DEFAULT_BITMAP_CONFIG;
         private String diskCachePath;
-        private boolean isDebug = true;
+        private DiskCacheStrategy mDiskCacheStrategy = new DiskCacheAllStrategy();
 
         public Builder() {
 
-        }
-
-        /**
-         * set size of memory cache
-         *
-         * @param size the size of memory cache
-         * @return Builder
-         */
-        public Builder setMemCacheSize(int size) {
-            this.memCacheSize = size;
-            return this;
         }
 
         /**
@@ -193,8 +182,8 @@ public class LoaderConfig {
             return this;
         }
 
-        public Builder setDebug(boolean debug) {
-            this.isDebug = debug;
+        public Builder setDiskCacheStrategy(DiskCacheStrategy strategy) {
+            this.mDiskCacheStrategy = strategy;
             return this;
         }
 

@@ -2,6 +2,8 @@ package com.droidworker.rximageloader.core;
 
 import com.droidworker.rximageloader.cache.DroidCacheManager;
 import com.droidworker.rximageloader.cache.interfaces.ICacheManager;
+import com.droidworker.rximageloader.core.strategy.DiskCacheAllStrategy;
+import com.droidworker.rximageloader.core.strategy.DiskCacheStrategy;
 
 /**
  * This class is used to storage objects
@@ -44,5 +46,12 @@ public class LoaderCore {
         }
         mGlobalConfig = loaderConfig;
         cacheManager.init(loaderConfig);
+    }
+
+    public static DiskCacheStrategy getDiskCacheStrategy(){
+        if(mGlobalConfig == null){
+            return new DiskCacheAllStrategy();
+        }
+        return mGlobalConfig.mDiskCacheStrategy;
     }
 }

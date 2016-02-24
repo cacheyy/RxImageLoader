@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 
-import com.droidworker.rximageloader.core.request.RequestManager;
-import com.droidworker.rximageloader.core.request.RequestManagerCreator;
+import com.droidworker.rximageloader.core.request.manager.RequestManager;
+import com.droidworker.rximageloader.core.request.manager.RequestManagerCreator;
 
 /**
  * @author DroidWorkerLYF

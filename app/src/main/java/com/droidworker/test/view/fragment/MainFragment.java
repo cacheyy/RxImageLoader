@@ -1,6 +1,7 @@
 package com.droidworker.test.view.fragment;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -60,14 +61,17 @@ public class MainFragment extends Fragment {
             @Override
             public void call(List<ImageBean> imageBeans) {
                 mList.clear();
-                mList.addAll(imageBeans);
+//                mList.addAll(imageBeans);
+                mList.addAll(getGifList());
                 mAdapter.notifyDataSetChanged();
             }
         });
+    }
 
-//        ImageBean bean = new ImageBean();
-//        bean.path = "http://img4q.duitang.com/uploads/item/201303/08/20130308121537_tQBXj.jpeg";
-//        mList.add(bean);
-//        mAdapter.notifyDataSetChanged();
+    private ArrayList<ImageBean> getGifList(){
+        ArrayList<ImageBean> list = new ArrayList<>();
+        list.add(new ImageBean(Environment.getExternalStorageDirectory().getAbsolutePath() + "/f048.gif"));
+        list.add(new ImageBean("http://assets.materialup.com/uploads/5675f7a6-6bfb-4a5f-96fa-8fd68c7fec2d/gooey_effect-spinner-loader.gif"));
+        return list;
     }
 }

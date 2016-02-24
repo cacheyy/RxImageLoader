@@ -31,8 +31,8 @@ public class Utils {
     private static String bytesToHexString(byte[] bytes) {
         // http://stackoverflow.com/questions/332079
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < bytes.length; i++) {
-            String hex = Integer.toHexString(0xFF & bytes[i]);
+        for (byte aByte : bytes) {
+            String hex = Integer.toHexString(0xFF & aByte);
             if (hex.length() == 1) {
                 sb.append('0');
             }
@@ -74,6 +74,6 @@ public class Utils {
      * @return true if it is a gif
      */
     public static boolean isGif(String path) {
-        return path.substring(path.length() - 3).toLowerCase().equals("gif");
+        return path.substring(path.lastIndexOf(".") + 1, path.length()).toLowerCase().equals("gif");
     }
 }

@@ -23,7 +23,7 @@ import rx.Subscriber;
  * @author DroidWorkerLYF
  */
 public class MemoryICacheImpl implements ICache {
-    private static final String TAG = "MemoryICacheImpl";
+    private static final String TAG = MemoryICacheImpl.class.getSimpleName();
     /**
      * LruCache used for memory cache
      */
@@ -48,10 +48,16 @@ public class MemoryICacheImpl implements ICache {
         mMemoryCache = new LruCache<String, Bitmap>(loaderConfig.memCacheSize) {
 
             protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
-                //Only support android 4.0 and above, so the BitmapFactory.Options inBitmap is
-                // all available. we don't need recycle the bitmap here, instead, we put them in a
-                // set, and reuse it when needed
-                mReusableBitmaps.add(new SoftReference<>(oldValue));
+                if(evicted){
+                    if(oldValue != null && !oldValue.isRecycled()){
+                        oldValue.recycle();
+                    }
+                } else {
+                    //Only support android 4.0 and above, so the BitmapFactory.Options inBitmap is
+                    // all available. we don't need recycle the bitmap here, instead, we put them
+                    //in a set, and reuse it when needed
+                    mReusableBitmaps.add(new SoftReference<>(oldValue));
+                }
             }
 
             @Override

@@ -1,4 +1,4 @@
-package com.droidworker.rximageloader.core.request;
+package com.droidworker.rximageloader.core.request.manager;
 
 import android.app.Fragment;
 import android.util.Log;
@@ -9,7 +9,7 @@ import com.droidworker.rximageloader.core.LoaderCore;
  * @author DroidWorkerLYF
  */
 public class RequestManagerFragment extends Fragment {
-    private static final String TAG = "RequestManagerFragment";
+    private static final String TAG = RequestManagerFragment.class.getSimpleName();
     private RequestManager mRequestManager;
 
     public RequestManagerFragment(){

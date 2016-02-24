@@ -6,15 +6,15 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 
-import rx.functions.Func1;
-
 /**
+ * Change the given bitmap to circle shape
+ *
  * @author DroidWorkerLYF
  */
-public class CircleTransform implements Func1<Bitmap, Bitmap> {
-    private Bitmap.Config mConfig = Bitmap.Config.ARGB_4444;
+public class CircleTransform extends Transform {
+    private Bitmap.Config mConfig = Bitmap.Config.ARGB_8888;
 
-    public CircleTransform(){
+    public CircleTransform() {
 
     }
 

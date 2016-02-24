@@ -1,20 +1,15 @@
 package com.droidworker.rximageloader.core.request;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.droidworker.rximageloader.core.LoaderConfig;
 import com.droidworker.rximageloader.core.LoaderCore;
-import com.droidworker.rximageloader.core.LoaderTask;
+import com.droidworker.rximageloader.core.request.manager.RequestManager;
 import com.droidworker.rximageloader.core.transition.Transition;
-import com.droidworker.rximageloader.utils.Utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
@@ -28,67 +23,67 @@ import rx.functions.Func1;
  *
  * @author DroidWorkerLYF
  */
-public class Request extends Subscriber<Bitmap> {
-    private static final String TAG = "Request";
+public abstract class Request extends Subscriber<Bitmap> {
+    private static final String TAG = Request.class.getSimpleName();
     /**
      * The path of resource
      */
-    private String mPath;
-    private WeakReference<View> mReference;
-    private Action1<Float> onProgress;
+    protected String mPath;
+    protected WeakReference<View> mReference;
+    protected Action1<Float> onProgress;
     /**
      * If you load image into {@link ImageView}, you can set ScaleType to this request
      */
-    private ImageView.ScaleType mScaleType = null;
+    protected ImageView.ScaleType mScaleType = null;
     /**
      * The required width
      */
-    private int reqWidth;
+    protected int reqWidth;
     /**
      * The required height
      */
-    private int reqHeight;
+    protected int reqHeight;
     /**
      * {@link android.graphics.Bitmap.Config}
      */
-    private Bitmap.Config mConfig;
+    protected Bitmap.Config mConfig;
     /**
      * {@link android.graphics.Bitmap.CompressFormat}
      */
-    private Bitmap.CompressFormat mCompressFormat;
+    protected Bitmap.CompressFormat mCompressFormat;
     /**
      * The compress quality
      */
-    private int mCompressQuality;
+    protected int mCompressQuality;
     /**
      * If this is true, then we will not cache the bitmap in memory
      */
-    private boolean skipCacheInMem;
+    protected boolean skipCacheInMem;
     /**
      * If this is true, the we will not cache the bitmap in disk
      */
-    private boolean skipCacheInDisk;
+    protected boolean skipCacheInDisk;
     /**
      * When {@link Subscriber#onError(Throwable)} called, set this to view's background
      */
-    private int errorId;
+    protected int errorId;
     /**
      * Before load an image, set this to view's background
      */
-    private int placeholderId;
+    protected int placeholderId;
     /**
      * This {@link Subscriber} is used to notify the {@link RequestManager} that the request has
      * been created and we shall perform a load task
      */
-    private Action1<Request> internalSubscriber;
-    private boolean resized;
-    private Func1<Bitmap, Bitmap> mTransformer = bitmap -> bitmap;
-    private Transition mTransition;
+    protected Action1<Request> internalSubscriber;
+    protected boolean resized;
+    protected Func1<Bitmap, Bitmap> mTransformer = bitmap -> bitmap;
+    protected Transition mTransition;
 
     public Request() {
         LoaderConfig loaderConfig = LoaderCore.getGlobalConfig();
         mConfig = loaderConfig.mConfig;
-        reqWidth = reqHeight = loaderConfig.screenWidth / 4;
+//        reqWidth = reqHeight = loaderConfig.screenWidth / 4;
     }
 
     /**
@@ -216,12 +211,12 @@ public class Request extends Subscriber<Bitmap> {
         return this;
     }
 
-    public Request transform(Func1<Bitmap, Bitmap> transformer){
+    public Request transform(Func1<Bitmap, Bitmap> transformer) {
         this.mTransformer = transformer;
         return this;
     }
 
-    public Request transition(Transition transition){
+    public Request transition(Transition transition) {
         this.mTransition = transition;
         return this;
     }
@@ -244,51 +239,28 @@ public class Request extends Subscriber<Bitmap> {
      * @param view the container
      * @return An Observable of load task
      */
-    public Observable<Bitmap> observable(View view) {
-        prepareView(view);
-        return LoaderTask.newTask(this).map(mTransformer);
-    }
-
-    /**
-     * Turn the given bitmap to byte[]
-     *
-     * @param view just use as a key
-     * @return byte[] of bitmap
-     */
-    public Observable<byte[]> toByte(View view) {
-        prepareView(view);
-        return LoaderTask.newTask(this)
-                .flatMap(bitmap -> {
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    bitmap.compress(mCompressFormat != null ?
-                                    mCompressFormat : LoaderCore.getGlobalConfig().mCompressFormat,
-                            100, byteArrayOutputStream);
-                    Observable observable = Observable.just(byteArrayOutputStream.toByteArray());
-                    try {
-                        byteArrayOutputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return observable;
-                });
-    }
+    public abstract Observable<Bitmap> observable(View view);
 
     /**
      * Prepare reference of the view
      *
      * @param view the container
      */
-    private void prepareView(View view) {
+    protected void prepareView(View view) {
         if (view == null) {
             throw new IllegalArgumentException("can not load into a null object");
         }
-        if(placeholderId != 0){
-            if(view instanceof ImageView){
-                ((ImageView)view).setImageResource(placeholderId);
-            } else {
-                view.setBackgroundResource(placeholderId);
+
+        if (view instanceof ImageView) {
+            final ImageView imageView = ((ImageView) view);
+            if (mScaleType != null) {
+                imageView.setScaleType(mScaleType);
             }
+            imageView.setImageResource(placeholderId);
+        }else {
+            view.setBackgroundResource(placeholderId);
         }
+
         if (mReference != null) {
             mReference.clear();
         }
@@ -306,6 +278,14 @@ public class Request extends Subscriber<Bitmap> {
      * @return key
      */
     public String getKey() {
+        getReqWidth();
+        if (resized) {
+            return getReqWidth() + "_" + getReqHeight() + "_" + getRawKey();
+        }
+        return getRawKey();
+    }
+
+    public String getRawKey() {
         return mPath.substring(mPath.lastIndexOf("/") + 1, mPath.length());
     }
 
@@ -323,16 +303,18 @@ public class Request extends Subscriber<Bitmap> {
      * @return the required width
      */
     public int getReqWidth() {
-        if(resized){
+        if (resized) {
+            Log.e(TAG, "resized " + resized + " " + reqWidth);
             return reqWidth;
         }
-        if(!checkNull()){
+        if (!checkNull()) {
             View view = getAttachedView();
-            if(view.getMeasuredWidth() != 0){
+            if (view.getMeasuredWidth() != 0) {
                 resized = true;
                 reqWidth = view.getMeasuredWidth();
             }
         }
+        Log.e(TAG, "resized " + resized + " " + reqWidth);
         return reqWidth;
     }
 
@@ -340,12 +322,12 @@ public class Request extends Subscriber<Bitmap> {
      * @return the required height
      */
     public int getReqHeight() {
-        if(resized){
+        if (resized) {
             return reqHeight;
         }
-        if(!checkNull()){
+        if (!checkNull()) {
             View view = getAttachedView();
-            if(view.getMeasuredHeight() != 0){
+            if (view.getMeasuredHeight() != 0) {
                 resized = true;
                 reqHeight = view.getMeasuredHeight();
             }
@@ -374,8 +356,12 @@ public class Request extends Subscriber<Bitmap> {
         return mCompressQuality;
     }
 
-    public Func1<Bitmap, Bitmap> getTransformer(){
+    public Func1<Bitmap, Bitmap> getTransformer() {
         return mTransformer;
+    }
+
+    public boolean isResized(){
+        return resized;
     }
 
     /**
@@ -383,7 +369,7 @@ public class Request extends Subscriber<Bitmap> {
      */
     public void clear() {
         mPath = null;
-        if(mReference != null){
+        if (mReference != null) {
             mReference.clear();
         }
         onProgress = null;
@@ -422,69 +408,19 @@ public class Request extends Subscriber<Bitmap> {
         if (isUnsubscribed() || checkNull() || errorId == 0) {
             return;
         }
+        Log.e(TAG, e.getMessage());
         View view = mReference.get();
         if (view instanceof ImageView) {
-            ((ImageView)view).setImageResource(errorId);
+            ((ImageView) view).setImageResource(errorId);
         } else {
             view.setBackgroundResource(errorId);
-        }
-    }
-
-    @Override
-    public void onNext(Bitmap requestResult) {
-        if (isUnsubscribed() || checkNull()) {
-            return;
-        }
-        View view = mReference.get();
-        view.post(() -> view.setBackgroundResource(0));
-
-        if(mTransition == null){
-            setResult(requestResult, view);
-        } else {
-            mTransition.getOut().addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-
-                    setResult(requestResult, view);
-                    view.setVisibility(View.VISIBLE);
-
-                    mTransition.getIn().addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            mTransition.destroy();
-                        }
-                    });
-                    mTransition.getIn().start();
-                }
-            });
-            mTransition.getOut().start();
-        }
-    }
-
-    private void setResult(Bitmap requestResult, View view) {
-        if (view instanceof ImageView) {
-            final ImageView imageView = ((ImageView) view);
-            if (mScaleType != null) {
-                imageView.setScaleType(mScaleType);
-            }
-
-            imageView.setImageBitmap(requestResult);
-        } else {
-            if (Utils.hasJellyBean()) {
-                view.setBackground(new BitmapDrawable(view.getResources(), requestResult));
-            } else {
-                //noinspection deprecation
-                view.setBackgroundDrawable(new BitmapDrawable(view.getResources(), requestResult));
-            }
         }
     }
 
     /**
      * @return true if we don't have a view
      */
-    private boolean checkNull() {
+    protected boolean checkNull() {
         return mReference == null || mReference.get() == null;
     }
 }

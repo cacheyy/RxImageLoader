@@ -1,4 +1,4 @@
-package com.droidworker.rximageloader.core.request;
+package com.droidworker.rximageloader.core.request.manager;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -17,7 +17,7 @@ import java.util.Map;
  * @author DroidWorkerLYF
  */
 public class RequestManagerCreator {
-    private static final String FRAGMENT_TAG = "com.droidworker.rximageloader.request";
+    private static final String FRAGMENT_TAG = RequestManagerCreator.class.getSimpleName();
     private static final RequestManagerCreator INSTANCE = new RequestManagerCreator();
     private Map<FragmentManager, RequestManagerFragment> requestManagerMap = new
             HashMap<>();
@@ -75,7 +75,7 @@ public class RequestManagerCreator {
     private RequestManager getRequestManager(FragmentManager fm) {
         RequestManagerFragment fragment = new RequestManagerFragment();
         requestManagerMap.put(fm, fragment);
-        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commit();
+        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commitAllowingStateLoss();
         return fragment.getRequestManager();
     }
 
@@ -99,7 +99,7 @@ public class RequestManagerCreator {
     private RequestManager getSupportRequestManager(android.support.v4.app.FragmentManager fm) {
         SupportRequestManagerFragment fragment = new SupportRequestManagerFragment();
         supportRequestManagerMap.put(fm, fragment);
-        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commit();
+        fm.beginTransaction().add(fragment, FRAGMENT_TAG).commitAllowingStateLoss();
         return fragment.getRequestManager();
     }
 

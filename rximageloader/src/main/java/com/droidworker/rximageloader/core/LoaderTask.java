@@ -1,7 +1,6 @@
 package com.droidworker.rximageloader.core;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import com.droidworker.rximageloader.core.gif.GifProcessor;
 import com.droidworker.rximageloader.core.request.Request;
@@ -131,13 +130,17 @@ public class LoaderTask {
                 }
                 if (tempOut.exists()) {
                     if (LoaderCore.getDiskCacheStrategy().cacheOrigin()) {
-                        //noinspection ResultOfMethodCallIgnored
-                        tempOut.renameTo(
-                                new File(LoaderCore.getGlobalConfig().diskCachePath + File.separator
-                                        + Utils.hashKeyForDisk(request.getRawKey())));
-                        if (subscriber.isUnsubscribed()) {
-                            return;
+                        File renameFile;
+                        if (!Utils.isGif(url)) {
+                            renameFile = new File(LoaderCore.getGlobalConfig().diskCachePath + File.separator
+                                    + Utils.hashKeyForDisk(request.getRawKey()));
+                            //noinspection ResultOfMethodCallIgnored
+                            tempOut.renameTo(renameFile);
+                            subscriber.onNext(renameFile);
+                        } else {
+                            subscriber.onNext(tempOut);
                         }
+                    } else {
                         subscriber.onNext(tempOut);
                     }
                 }
@@ -183,7 +186,11 @@ public class LoaderTask {
 
     public static Observable<Bitmap> gifTask(Request request) {
         return Observable.concat(localGifTask(request), netGifTask(request))
-                .filter(bitmap -> bitmap != null && !bitmap.isRecycled());
+                .filter(bitmap -> bitmap != null && !bitmap.isRecycled())
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+//        return netGifTask(request)
+//                .filter(bitmap -> bitmap != null && !bitmap.isRecycled())
+//                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
 
     public static Observable<Bitmap> localGifTask(Request request){
@@ -191,10 +198,9 @@ public class LoaderTask {
                 new Observable.OnSubscribe<Bitmap>() {
                     @Override
                     public void call(Subscriber<? super Bitmap> subscriber) {
-                        if(subscriber.isUnsubscribed()){
+                        if (subscriber.isUnsubscribed() || Utils.isUrl(request.getPath())) {
                             return;
                         }
-                        Log.e(TAG, "local gif");
                         GifProcessor gifProcessor = getGifProcessor(request);
                         while (!subscriber.isUnsubscribed()) {
                             subscriber.onNext(gifProcessor.getFrame());
@@ -206,20 +212,46 @@ public class LoaderTask {
                         }
                     }
                 }
-        ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+        );
     }
 
     public static Observable<Bitmap> netGifTask(Request request){
-        return downloadToFile(request).compose(fileObservable -> {
-            if(!Utils.isUrl(request.getPath())){
-                return Observable.empty();
-            }
-            Log.e(TAG, "net gif");
-            String targetPath = LoaderCore.getGlobalConfig().tempFilePath + File.separator + Utils
-                    .hashKeyForDisk(request.getRawKey());
-            request.load(targetPath);
-            return localGifTask(request);
-        });
+        return Observable.create(
+                new Observable.OnSubscribe<Bitmap>() {
+                    @Override
+                    public void call(Subscriber<? super Bitmap> subscriber) {
+                        if (subscriber.isUnsubscribed()) {
+                            return;
+                        }
+
+                        downloadToFile(request).subscribe(new Subscriber<File>() {
+                            @Override
+                            public void onCompleted() {
+
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                e.printStackTrace();
+                            }
+
+                            @Override
+                            public void onNext(File file) {
+                                request.load(file.getAbsolutePath());
+                                GifProcessor gifProcessor = getGifProcessor(request);
+                                while (!subscriber.isUnsubscribed()) {
+                                    subscriber.onNext(gifProcessor.getFrame());
+                                    try {
+                                        Thread.sleep(gifProcessor.getDelay());
+                                    } catch (InterruptedException e) {
+
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+        );
     }
 
     private static GifProcessor getGifProcessor(Request request){
@@ -233,7 +265,9 @@ public class LoaderTask {
                 inputStream = request.getAttachedView().getContext().getAssets()
                         .open(request.getRawKey());
             }
-            gifProcessor.read(inputStream);
+            if(inputStream != null){
+                gifProcessor.read(inputStream);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

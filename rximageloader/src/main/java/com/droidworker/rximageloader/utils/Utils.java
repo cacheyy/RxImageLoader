@@ -74,6 +74,6 @@ public class Utils {
      * @return true if it is a gif
      */
     public static boolean isGif(String path) {
-        return path.substring(path.length() - 3).toLowerCase().equals("gif");
+        return path.substring(path.lastIndexOf(".") + 1, path.length()).toLowerCase().equals("gif");
     }
 }

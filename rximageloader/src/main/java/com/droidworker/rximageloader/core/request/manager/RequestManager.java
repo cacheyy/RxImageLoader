@@ -1,6 +1,7 @@
 package com.droidworker.rximageloader.core.request.manager;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 
@@ -77,6 +78,7 @@ public class RequestManager {
             if (request instanceof BitmapRequest) {
                 LoaderTask.bitmapTask(request).subscribe(request);
             } else if (request instanceof GifRequest) {
+                Log.e(TAG, "load gif");
                 LoaderTask.gifTask(request).subscribe(request);
             }
         }
